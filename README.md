@@ -1,22 +1,24 @@
+
 Simple Racket Game Library
-==============
-				 
-Een scheme-library voor het ontwikkelen van simpele games.
-	 
- ----------------------------- Features ---------------------------
+==========================
 
- * Volledig event-driven muis en toetsenbord
-     >> detecteer muiswiel, indrukken/loslaten van toets, ...
- * Gebufferde frames
-     >> voorkom flikkeringen tijdens het tekenen
- * Snelheidsoptimisaties 
-     >> gebruik van hashtabellen, class-generics, ...
- * Geavanceerde tekenfuncties
-     >> teken bitmaps, gebruik rotaties, transparantie, ...
- * Uitgebreid kleurenpallet
-     >> kleuren als indigo, goudgeel, turqoise, ...
+This is a small library written in racket that aims to make developing
+games with the native racket/gui library more convenient.
 
- ----------------------------- Gebruik ----------------------------
+## Kenmerken ##
+
+ - Volledig event-driven muis en toetsenbord
+   >> detecteer muiswiel, indrukken/loslaten van toets, ...
+ - Gebufferde frames
+   >> voorkom flikkeringen tijdens het tekenen
+ - Snelheidsoptimisaties 
+   >> gebruik van hashtabellen, class-generics, ...
+ - Geavanceerde tekenfuncties
+   >> teken bitmaps, gebruik rotaties, transparantie, ...
+ - Uitgebreid kleurenpallet
+   >> kleuren als indigo, goudgeel, turqoise, ...
+
+## Gebruik ##
 
  Alleen de bestanden in de hoofdmap zijn nodig om het programma te
  runnen. Deze moeten in dezelfde map blijven staan. Het wordt
@@ -29,30 +31,28 @@ Een scheme-library voor het ontwikkelen van simpele games.
  om alleen functies te gebruiken die conform zijn met diegene die
  gegeven werden bij de opdracht van het jaarproject.
  
- Grafische functies
-   >> http://docs.racket-lang.org/draw/Drawing_Functions.html
- Tekenoperaties
-   >> http://docs.racket-lang.org/draw/dc___.html
- Kleurennamen:
-   >> http://docs.racket-lang.org/draw/color-database___.html
- Bitmaps
-   >> http://docs.racket-lang.org/draw/bitmap_.html
+ - [Grafische functies](url http://docs.racket-lang.org/draw/Drawing_Functions.html)
+ - [Tekenoperaties](url http://docs.racket-lang.org/draw/dc___.html)
+ - [Kleurennamen](url http://docs.racket-lang.org/draw/color-database___.html)
+ - [Bitmaps](url http://docs.racket-lang.org/draw/bitmap_.html)
 
  De configuratie-instellingen kunnen aangepast worden in het
  bestand "constants.rkt". Kijk na of je nieuwe configuratie
  werkt door een van de testbestanden runnen alvorens je de nieuwe
  configuratie in je project gebruikt. 
  
- ---------------------------- To Do List --------------------------
+## To Do List ##
 
  - Vinden en fixen van (eventuele) bugs
  - Gebruik van BST-algoritme voor speciale toetsen
- - Een betere, simpele manier vinden om generics aan te maken
+ - Performantietests op generics uitvoeren
  - OpenGL: gebruik de grafische kaart van de computer
  - Uitgebreide events: pre/post-acties, events chainen, ...
- - Meer tekenfuncties: naar het model van "Canvas.rkt"
+ - Meer high-level tekenfuncties
 
- ----------------------------- Credits ----------------------------
+## Credits ##
+
+> Ere wie ere toekomt:
 
  Library gemaakt en onderhouden door Sam Vervaeck.
 
@@ -62,14 +62,14 @@ Een scheme-library voor het ontwikkelen van simpele games.
 
  Gebaseerd op de code van het Software Languages Lab. Een volledige
  backport naar het originele "Canvas.rkt"-bestand zit bijgevoegd in
- een aparte file. Gebruik (#%require "canvas-v2.rkt")
+ een aparte file. Gebruik (#%require "canvas.rkt")
  
  Alle referentiecode is terug te vinden in de map "references".
 
- ---------------------------- Disclaimer --------------------------
+## Disclaimer ##
 
            Code mag vrij gebruikt en/of aangepast worden. 
 
-                   >> Alles op eigen risico! <<
+                   ** Alles op eigen risico! **
 
          https://www.facebook.com/groups/496604190350242/
