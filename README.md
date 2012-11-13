@@ -36,10 +36,10 @@ providing an exemplary implementation using racket/gui.
 This library is a fork of the library provided by the
 [Software Languages Lab](url http://soft.vub.ac.be/soft/edu/teaching) as
 part of one of their courses. A full backport to this library
-has been provided in "canvas.rkt". Use (#%require "graphics/canvas.rkt") in
+has been provided in *canvas.rkt*. Use `(#%require "graphics/canvas.rkt")` in
 order to load it instead of the original one.
  
-The libraries that have been of use are stored in the folder "references".
+The libraries that have been of use are stored in the folder *references*.
 
 ## Disclaimer ##
 
