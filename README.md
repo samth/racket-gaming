@@ -5,71 +5,44 @@ Simple Racket Game Library
 This is a small library written in racket that aims to make developing
 games with the native racket/gui library more convenient.
 
-## Kenmerken ##
+## Features ##
 
- - Volledig event-driven muis en toetsenbord
-   >> detecteer muiswiel, indrukken/loslaten van toets, ...
- - Gebufferde frames
-   >> voorkom flikkeringen tijdens het tekenen
- - Snelheidsoptimisaties 
-   >> gebruik van hashtabellen, class-generics, ...
- - Geavanceerde tekenfuncties
-   >> teken bitmaps, gebruik rotaties, transparantie, ...
- - Uitgebreid kleurenpallet
-   >> kleuren als indigo, goudgeel, turqoise, ...
+ - Fully event-driven mouse and keyboard
+ - Buffered frames preventing flicker
+ - Speed optimizations
+ - Advanced drawing procedures
+ - Multiple game-loops
 
-## Gebruik ##
+## Usage ##
 
- Alleen de bestanden in de hoofdmap zijn nodig om het programma te
- runnen. Deze moeten in dezelfde map blijven staan. Het wordt
- aangeraden om de library in een aparte directory te houden zodat
- ze gemakkelijk kan worden geupdated.
- 
- Zie de bestanden in de map "examples" voor meer informatie over
- het gebruik van deze library. De hoofdlibrary includen gaat via
- (#%require "graphics.rkt"). Gebruik (#%require "canvas-v2.rkt")
- om alleen functies te gebruiken die conform zijn met diegene die
- gegeven werden bij de opdracht van het jaarproject.
- 
- - [Grafische functies](url http://docs.racket-lang.org/draw/Drawing_Functions.html)
- - [Tekenoperaties](url http://docs.racket-lang.org/draw/dc___.html)
- - [Kleurennamen](url http://docs.racket-lang.org/draw/color-database___.html)
- - [Bitmaps](url http://docs.racket-lang.org/draw/bitmap_.html)
+Please read the [wikipages](url http://github.com/samvv/racket-gaming/wiki)
+for more information on how to use this library.
 
- De configuratie-instellingen kunnen aangepast worden in het
- bestand "constants.rkt". Kijk na of je nieuwe configuratie
- werkt door een van de testbestanden runnen alvorens je de nieuwe
- configuratie in je project gebruikt. 
- 
-## To Do List ##
+If you encouter bugs please submit them to the [issue tracker](url https://github.com/samvv/racket-gaming/issues).
+You are free to patch the code yourself, and it would be greatly appreciated if you could
+[pull](url https://github.com/samvv/racket-gaming/pulls) the modifications afterwards.
 
- - Vinden en fixen van (eventuele) bugs
- - Gebruik van BST-algoritme voor speciale toetsen
- - Performantietests op generics uitvoeren
- - OpenGL: gebruik de grafische kaart van de computer
- - Uitgebreide events: pre/post-acties, events chainen, ...
- - Meer high-level tekenfuncties
+Feature requests can also be submitted to the [issue tracker](url https://github.com/samvv/racket-gaming/issues)
+or alernatively they can be placed as a comment to one of the source files. Those who are
+member can also discuss it on the [facebook group](url https://www.facebook.com/groups/496604190350242/).
 
 ## Credits ##
 
-> Ere wie ere toekomt:
+Library created and maintained by Sam Vervaeck.
 
- Library gemaakt en onderhouden door Sam Vervaeck.
+Thanks to Adriaan Leynse for the original concept and
+providing an exemplary implementation using racket/gui.
 
- Met dank aan Adriaan Leynse voor het vertrouwd maken met de racket
- libraries zoals racket/gui en racket/class. Ook voor het maken van
- een eerste implementatie gebaseerd op racket/gui.
-
- Gebaseerd op de code van het Software Languages Lab. Een volledige
- backport naar het originele "Canvas.rkt"-bestand zit bijgevoegd in
- een aparte file. Gebruik (#%require "canvas.rkt")
+This library is a fork of the library provided by the
+[Software Languages Lab](url http://soft.vub.ac.be/soft/edu/teaching) as
+part of one of their courses. A full backport to this library
+has been provided in "canvas.rkt". Use (#%require "graphics/canvas.rkt") in
+order to load it instead of the original one.
  
- Alle referentiecode is terug te vinden in de map "references".
+The libraries that have been of use are stored in the folder "references".
 
 ## Disclaimer ##
 
-           Code mag vrij gebruikt en/of aangepast worden. 
+The code may freely be modified/redistributed. A small notification would be great.
 
-                   ** Alles op eigen risico! **
-
-         https://www.facebook.com/groups/496604190350242/
+** Using this code is entirely at your own risk! **
