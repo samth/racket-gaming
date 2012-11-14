@@ -108,8 +108,11 @@
 ;; Afwerking
 
 (chain start-event (add! (thunk (chain the-animations (start)))))
+
 (use-brush example full-black)
 (draw-rectangle example 0 0 500 500)
+
 (set-text-foreground example "white")
 (draw-text example "Press space to start the animations!" 100 200)
+
 (update-graphics example)

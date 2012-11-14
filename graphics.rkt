@@ -29,7 +29,15 @@
          show-graphics
          hide-graphics
          update-graphics
-         set-origin/rotation
+         get-width
+         get-height
+         set-cartesian
+         set-document
+         use-transformation
+         use-scale
+         use-rotation
+         use-cartesian
+         use-document
          set-brush/pen
          use-brush
          use-pen
@@ -51,7 +59,6 @@
          ; operaties op pen%
          get-brush-color
          get-brush-gradient
-         get-brush-handle
          get-brush-stipple
          get-brush-style
          get-brush-transformation
@@ -211,7 +218,6 @@
 (define-operators brush%
   [get-color get-brush-color]
   [get-gradient get-brush-gradient]
-  [get-handle get-brush-handle]
   [get-stipple get-brush-stipple]
   [get-style get-brush-style]
   [get-transformation get-brush-transformation]
@@ -316,7 +322,8 @@
   (class bitmap-dc% ; we nemen de klasse die het meest gebruikt wordt als basis
     
     ; dc<%>-methoden die we nodig zullen hebben of moeten veranderen
-    (inherit/super clear set-brush set-pen set-origin set-rotation)
+    (inherit/super set-bitmap clear set-brush set-pen get-size)
+    (inherit/super get-transformation set-transformation get-initial-matrix set-initial-matrix set-origin)
     
     ; initialisatiewaarden voor het venster
     (init [width 800]
@@ -325,11 +332,14 @@
           [shown? #t]
           [wheel-sensitivity 1])
     
+    ; het type assenstelsel dat moet gebruikt worden
+    (init-field [mode 'cartesian])
+    
     ; abstraheer de input-events
     (field [mouse (new mouse%)]
            [keyboard (new keyboard%)])
     
-    ; de muisevents naar buiten halen
+    ; bespaar field lookups door objecten naar buiten te halen
     (define*
       [motion (chain mouse move)]
       [wheel-roll (chain mouse wheel roll)]
@@ -392,8 +402,7 @@
     
     ; push de huidige bitmap naar het scherm
     (define/public (update)
-      (draw-bitmap target buffer 0 0)
-      (super clear))
+      (draw-bitmap target buffer 0 0))
     
     ; om het venster zichtbaar te maken
     (define/public (show)
@@ -402,6 +411,16 @@
     ; om het venster te verbergen
     (define/public (hide)
       (send window show #f))
+    
+    ; de zichtbare breedte teruggeven
+    (define/public (get-width)
+      (let-values ([(width height) (get-size)])
+        width))
+    
+    ; de zichtbare hoogte teruggeven
+    (define/public (get-height)
+      (let-values ([(width height) (get-size)])
+        height))
     
     ; hou alle gameloops bij in een event-handler%
     (field [animations
@@ -421,9 +440,10 @@
                      (let ((new-time (current-milliseconds)))
                        (yield)
                        (if (> (- new-time old-time) delta) ; wanneer de framerate overschreden is
-                           (begin ; teken een nieuw frame
-                             (trigger (/ (- new-time old-time) 1000))
-                             (update)
+                           (begin ; start met renderen van een nieuw frame
+                             (trigger (/ (- new-time old-time) 1000)) ; voer alle animatiefuncties uit
+                             (update) ; breng de buffer over naar het scherm
+                             (clear) ; en leeg de buffer voor de volgende keer
                              (queue-callback (thunk (loop new-time)) #t))
                            (queue-callback (thunk (loop old-time)) #t)))) ; anders gewoon verder wachten
                    
@@ -440,8 +460,8 @@
    
     ; zet de stijl waarop een bepaald element moet getekend worden
     (define/public (set-brush/pen brush pen)
-      (super set-brush brush)
-      (super set-pen pen))
+      (set-brush brush)
+      (set-pen pen))
     
     ; gebruik alleen een pen om te  tekenen
     (define/public (use-pen pen)
@@ -451,10 +471,42 @@
     (define/public (use-brush brush)
       (set-brush/pen brush no-pen))
     
-    ; roteer het canvas rond een zeker centrum
-    (define/public (set-origin/rotation x y rotation)
-      (super set-origin x y)
-      (super set-rotation rotation))
+    ; zet het canvas naar het cartesisch assenstelsel
+    (define/public (set-cartesian)
+      (set-initial-matrix (vector 1 0 0 -1 0 (get-height))))
+    
+    ; zet het canvas naar documentmodus (compatibiliteit)
+    (define/public (set-document)
+      (set-initial-matrix (vector 1 0 0 1 0 0)))
+    
+    ; gebruik een bepaalde transformatie voor een tekenfunctie  
+    (define/public (use-transformation thunk new-transformation)
+      (let ((old-transformation (get-transformation)))
+        (set-transformation new-transformation)
+        (thunk)
+        (set-transformation old-transformation)))
+    
+    ; de rotatie tijdelijk veranderen
+    (define/public (use-rotation thunk rotation [centre-x 0] [centre-y 0])
+      (use-transformation thunk (vector (get-initial-matrix) centre-x centre-y 1 1 rotation)))
+  
+    ; de schaal tijdelijk veranderen
+    (define/public (use-scale thunk scale-x scale-y [centre-x 0] [centre-y 0])
+      (use-transformation thunk (vector (get-initial-matrix) centre-x centre-y scale-x scale-y 0)))
+    
+    ; tijdelijk het cartesisch assenstelsel gebruiken
+    (define/public (use-cartesian thunk)
+      (use-transformation thunk (vector (vector 1 0 0 -1 0 (get-height)) 0 0 1 1 0)))
+    
+    ; tijdelijk de documenten-layout gebruiken
+    (define/public (use-document thunk)
+      (use-transformation thunk (vector (vector 1 0 0 1 0 0) 0 0 1 1 0)))
+    
+    ; stel het juiste assenstelsel in
+    (case mode
+      ((cartesian) (set-cartesian))
+      ((document) (set-document))
+      (else (error 'graphics "the mode ~a is not supported by this library" mode)))
     
     (yield))) ; een hack om ervoor te zorgen dat er meteen kan worden getekend
 
@@ -466,7 +518,15 @@
   [show show-graphics]
   [hide hide-graphics]
   [update update-graphics]
-  set-origin/rotation
+  get-width
+  get-height
+  set-cartesian
+  set-document
+  use-transformation
+  use-scale
+  use-rotation
+  use-cartesian
+  use-document
   set-brush/pen
   use-brush
   use-pen)

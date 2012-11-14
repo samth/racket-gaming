@@ -8,7 +8,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (require "constants.rkt"
-         (rename-in "graphics.rkt"  [make-color make-native-color]))
+         "graphics.rkt")
 
 (provide make-image
          red
@@ -41,8 +41,7 @@
           #:weight FONT-WEIGHT
           #:underlined? FONT-UNDERLINED
           #:smoothing FONT-SMOOTHING
-          #:size-in-pixels? FONT-SIZE-IN-PIXELS
-          #:hinting FONT-HINTING)]
+          #:size-in-pixels? FONT-SIZE-IN-PIXELS)]
   [brush (new brush%
            [style BRUSH-STYLE]
            [stipple BRUSH-STIPPLE]
@@ -56,13 +55,13 @@
          [stipple PEN-STIPPLE])])
 
 (define*
-  [some-brush (make-brush)]
-  [some-pen (make-pen)])
+  [some-brush (new brush%)]
+  [some-pen (new brush%)])
 
 (struct color (native brush pen)) ; onthoud de brush en pen van een bepaalde kleur
 
 (define (make-color r g b [alpha 1.0])
-  (make-native-color r g b alpha))
+  (make-object color% (* r 16) (* g 16) (* b 16) alpha))
 
 (define (use-brush! color) ; voor vormen die gevuld moeten worden
   (set-brush canvas some-brush)
@@ -80,13 +79,13 @@
 (set-font canvas font)
 
 (define*
-  [red (make-color 16 0 0)]
-  [green (make-color 0 16 0)]
-  [blue (make-color 0 0 16)])
+  [red (make-color 15 0 0)]
+  [green (make-color 0 15 0)]
+  [blue (make-color 0 0 15)])
 
 ;; Afbeeldingen
 
-(define make-image location (make-constructor bitmap%))
+(define make-image (make-constructor bitmap%))
 
 ;; Afgeleide tekenoperates
 
