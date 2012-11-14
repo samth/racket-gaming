@@ -61,9 +61,14 @@
   (define rotation 0)
   (lambda (delta)
     (set! rotation (+ rotation (* delta speed)))
-    (set-brush/pen example brush pen)
-    (set-origin/rotation example (x position) (y position) rotation)
-    (draw-rectangle example (- (/ (x size) 2)) (-  (/ (y size) 2)) (x size) (y size))))
+    (use-rotation
+     example
+     (thunk
+      (set-brush/pen example brush pen)
+      (draw-rectangle example (- (/ (x size) 2)) (-  (/ (y size) 2)) (x size) (y size)))
+     rotation
+     (x position)
+     (y position))))
 
 (add-animation! (rotating-rectangle (2d 50 50) (2d 50 50) 2 full-black no-pen))
 (add-animation! (rotating-rectangle (2d 300 400) (2d 50 50) 3 no-brush mixed-pen))
@@ -83,7 +88,6 @@
       (set! direction (- direction)))
     (set! size (+ size direction)))
   (define (draw!)
-    (set-origin/rotation example (x position) (y position)  0)
     (set-brush/pen example brush pen)
     (draw-ellipse example (- (/ size 2)) (- (/ size 2)) size size))
   (lambda (msg . args)
