@@ -323,6 +323,7 @@
     
     ; dc<%>-methoden die we nodig zullen hebben of moeten veranderen
     (inherit/super set-bitmap clear set-brush set-pen get-size)
+    (inherit/super draw-text)
     (inherit/super get-transformation set-transformation get-initial-matrix set-initial-matrix set-origin)
     
     ; initialisatiewaarden voor het venster
@@ -457,7 +458,7 @@
                    ; om de animaties te stoppen
                    (define/public (stop)
                      (set! loop (thunk 'stopped)))))])
-   
+    
     ; zet de stijl waarop een bepaald element moet getekend worden
     (define/public (set-brush/pen brush pen)
       (set-brush brush)

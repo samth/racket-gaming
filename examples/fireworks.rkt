@@ -186,7 +186,7 @@
     (make-cannon fireworks
                  (2d (/ (get-width my-canvas) 2) ground-level)
                  (new brush% [color "grey"])))
-  
+
   (chain move-left-key press (add! (thunk (send-message cannon (move! -)))))
   (chain move-right-key press (add! (thunk (send-message cannon (move! +)))))
   (chain move-left-key release (add! (send-message cannon stop-move)))
@@ -204,6 +204,7 @@
   
   (define background (make-object bitmap% "stars.jpg"))
   (define mask (make-object bitmap% "stars-mask.png" 'png/alpha))
+  (set-text-foreground canvas "yellow")
   
   (define (frame time-delta)
     (use-document canvas (thunk (draw-bitmap canvas background 0 0)))
@@ -211,7 +212,13 @@
     (send-message fireworks (draw-all canvas))
     (send-message cannon (update! time-delta))
     (send-message cannon (draw canvas))
-    (use-document canvas (thunk (draw-bitmap canvas mask 0 0))))
+    (use-document
+     canvas
+     (thunk
+      (draw-bitmap canvas mask 0 0)
+      (draw-text canvas "Use the arrow buttons to move and rotate the cannon" 250 550)
+      (draw-text canvas "Press space to shoot" 300 600)
+      (draw-text canvas "For the big one, press tab!" 350 650))))
   
   (chain canvas animations (add! frame))
   

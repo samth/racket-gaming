@@ -107,7 +107,7 @@
 
 (define (draw-text! x y text color)
   (use-font-color! color)
-  (draw-text canvas text x y))
+  (use-document canvas (thunk (draw-text canvas text x (- (get-height canvas) y)))))
 
 ;; Event listening
 
