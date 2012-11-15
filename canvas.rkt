@@ -109,6 +109,13 @@
   (use-font-color! color)
   (use-document canvas (thunk (draw-text canvas text x (- (get-height canvas) y)))))
 
+(define (draw-image! x y image)
+  (use-document canvas (thunk (draw-bitmap canvas image x (- (get-height canvas) y)))))
+
+(define (test)
+  (draw-image! 100 100 (make-image "examples/stars.jpg"))
+  (update-graphics canvas))
+
 ;; Event listening
 
 (define (on-key! code proc)
