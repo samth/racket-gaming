@@ -119,4 +119,4 @@
 (set-text-foreground example "white")
 (draw-text example "Press space to start the animations!" 100 200)
 
-(update-graphics example)
+(chain the-animations (start))
