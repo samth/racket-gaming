@@ -18,16 +18,16 @@ games with the native racket/gui library more convenient.
 There are two choices: `(#%require "graphics/graphics.rkt")` includes the full library and
 `(#%require "graphics/canvas.rkt")` imports the simplified library (recommended for beginners).
 
-Please read the [wikipages](url http://github.com/samvv/racket-gaming/wiki)
+Please read the [wikipages](http://github.com/samvv/racket-gaming/wiki)
 for more information on how to use this library.
 
-If you encouter bugs please submit them to the [issue tracker](url https://github.com/samvv/racket-gaming/issues).
+If you encouter bugs please submit them to the [issue tracker](https://github.com/samvv/racket-gaming/issues).
 You are free to patch the code yourself, and it would be greatly appreciated if you could
-[pull](url https://github.com/samvv/racket-gaming/pulls) the modifications afterwards.
+[pull](https://github.com/samvv/racket-gaming/pulls) the modifications afterwards.
 
-Feature requests can also be submitted to the [issue tracker](url https://github.com/samvv/racket-gaming/issues)
+Feature requests can also be submitted to the [issue tracker](https://github.com/samvv/racket-gaming/issues)
 or alernatively they can be placed as a comment to one of the source files. Those who are
-member can also discuss it on the [facebook group](url https://www.facebook.com/groups/496604190350242/).
+member can also discuss it on the [facebook group](https://www.facebook.com/groups/496604190350242/).
 
 ## Credits ##
 
@@ -37,7 +37,7 @@ Thanks to Adriaan Leynse for the original concept and
 providing an exemplary implementation using racket/gui.
 
 This library is a fork of the library provided by the
-[Software Languages Lab](url http://soft.vub.ac.be/soft/edu/teaching) as
+[Software Languages Lab](http://soft.vub.ac.be/soft/edu/teaching) as
 part of one of their courses. A full backport to this library
 has been provided in *canvas.rkt*. Use *graphics/canvas.rkt*  in
 order to use racket-gaming as a back-en instead of the old library.
