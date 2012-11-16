@@ -55,7 +55,7 @@
          set-pen-stipple
          set-pen-style
          set-pen-width
-
+         
          ; operaties op pen%
          get-brush-color
          get-brush-gradient
@@ -137,9 +137,9 @@
          translate
          try-color)
 
-;;;;;;;;;;;;;;;;;;;;
-;; METADEFINITIES ;;
-;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;
+;; Meta Definitions ;;
+;;;;;;;;;;;;;;;;;;;;;;
 
 ; syntax om makkelijker veel definities aan te maken
 (define-syntax-rule
@@ -192,12 +192,17 @@
 (define-syntax-rule (extract object [name path ...] ...)
   (define* [name (chain object path ...)] ...))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; SELECTIEVERSNELLING ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;
+;; Object Generics ;;
+;;;;;;;;;;;;;;;;;;;;;
 
 ; optimizaties voor het tekenen:
 (define-operators dc<%> cache-font-metrics-key clear copy draw-arc draw-bitmap draw-bitmap-section draw-ellipse draw-line draw-lines draw-path draw-point draw-polygon draw-rectangle draw-rounded-rectangle draw-spline draw-text end-doc end-page erase flush get-alpha get-background get-brush get-char-height get-char-width get-clipping-region get-device-scale get-font get-gl-context get-initial-matrix get-origin get-pen get-rotation get-scale get-size get-smoothing get-text-background get-text-extent get-text-foreground get-text-mode get-transformation glyph-exists? ok? resume-flush rotate scale set-alpha set-background set-brush set-clipping-rect set-clipping-region set-font set-initial-matrix set-origin set-pen set-rotation set-scale set-smoothing set-text-background set-text-foreground set-text-mode set-transformation start-doc start-page suspend-flush transform translate try-color)
+
+; het gebruiken van een canvas:
+(define-operators canvas%
+  [get-width get-canvas-width]
+  [get-height get-canvas-height])
 
 ; voor het tekenen met een pen:
 (define-operators pen%
@@ -245,7 +250,7 @@
   [search-pen  (make-list-lookup the-pen-list 'find-or-create-pen)])
 
 ;;;;;;;;;;;;;;;;;;;;
-;; EVENT HANDLING ;;
+;; Event Handling ;;
 ;;;;;;;;;;;;;;;;;;;;
 
 (define event-handler%
@@ -266,17 +271,18 @@
            [release (new event-handler%)])
     (super-new)))
 
-;; Muis
+;; Mouse
 
 (define wheel%
   (class event-handler%
-   (field [roll (new event-handler%)]
-          [left (new event-handler%)]
-          [right (new event-handler%)])
-   (super-new)))
+    (field [roll (new event-handler%)]
+           [left (new event-handler%)]
+           [right (new event-handler%)])
+    (super-new)))
 
-(define mouse%
+(define mouse-event-handler%
   (class button-handler%
+    (init [wheel-sensitivity 1]) ; currently unused
     (field [move (new event-handler%)]
            [wheel (new wheel%)]
            [left (new button-handler%)]
@@ -284,9 +290,9 @@
            [right (new button-handler%)])
     (super-new)))
 
-;; Toetsenbord
+;; Keyboard
 
-(define keyboard%
+(define keyboard-event-handler%
   (class button-handler%
     
     ; we gebruiken een hashtabel om toetsen met events te associeren
@@ -308,18 +314,82 @@
 
 ; we maken weer wat operators aan voor intern gebruik
 (define-operators event-handler% trigger)
-(define-operators keyboard% get-key)
+(define-operators keyboard-event-handler% get-key)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;
-;; VERALGEMEEND CANVAS ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;
+;; Graphics Object ;;
+;;;;;;;;;;;;;;;;;;;;;
 
 (define*
   [no-brush (new brush% [style 'transparent])] ; wanneer we geen brush nodig hebben
   [no-pen (new pen% [style 'transparent])]) ; wanneer we geen pen nodig hebben
 
+(define canvas-event-handler%
+  (class event%
+    (field [paint (new event-handler%)]
+           [show (new event-handler%)]
+           [hide (new event-handler%)]
+           [resize (new event-handler%)])
+    (super-new)))
+
+(define evented-canvas%
+  (class canvas%
+    
+    ; event handlers die zullen worden opgeroepen
+    (init-field events mouse keyboard)
+    
+    ; save field lookups on mouse-events
+    (extract mouse
+      [motion move]
+      [wheel-roll wheel roll]
+      [wheel-left wheel left]
+      [wheel-right wheel right]
+      [left-down left press]
+      [left-up left release]
+      [middle-down middle press]
+      [middle-up middle release]
+      [right-up right press]
+      [right-down right release])
+   
+    (super-new)
+    
+    ; redefine the callback for showing/hiding the canvas
+    (define/override (on-superwindow-show shown?)
+      (trigger (if shown? (chain events show) (chain events hide))))
+    
+    ; redefine the callback that is executed on resize
+    (define/override (on-size width height)
+      (trigger (chain events resize) width height))
+    
+    ; redefine the callback that paints the canvas
+    (define/override (on-paint)
+      (trigger (chain events paint)))
+    
+    ; process the input of the keyboard
+    (define/override (on-char event) ; http://docs.racket-lang.org/gui/key-event_.html
+      (let ((code (send event get-key-code)))
+        (case code
+          ((wheel-up) (trigger wheel-roll +))
+          ((wheel-down) (trigger wheel-roll -))
+          ((wheel-left) (trigger wheel-left))
+          ((wheel-right) (trigger wheel-right))
+          ((release) (trigger (chain (get-key keyboard (get-key-release-code event)) release)))
+          (else (trigger (chain (get-key keyboard code) press))))))
+    
+    ; process the input of the mouse
+    (define/override (on-event event) ; http://docs.racket-lang.org/gui/mouse-event_.html
+      (let ((type (get-event-type event)))
+        (case type
+          ((motion) (trigger motion (get-x event) (get-y event)))
+          ((left-down) (trigger left-down))
+          ((left-up) (trigger left-up))
+          ((middle-down) (trigger middle-down))
+          ((middle-up) (trigger middle-up))
+          ((right-up) (trigger right-up))
+          ((right-down) (trigger right-down)))))))
+
 (define graphics%
-  (class bitmap-dc% ; we nemen de klasse die het meest gebruikt wordt als basis
+  (class bitmap-dc% ; we take the class that needs the most optimizations
     
     ; dc<%>-methoden die we nodig zullen hebben of moeten veranderen
     (inherit/super set-bitmap clear set-brush set-pen get-size)
@@ -330,66 +400,32 @@
     (init [width 800]
           [height 600]
           [title "Jaarproject (2012 - 2013)"]
-          [shown? #t]
-          [wheel-sensitivity 1])
+          [shown? #t])
     
     ; het type assenstelsel dat moet gebruikt worden
-    (init-field [mode 'cartesian])
+    (init-field [mode 'cartesian]
+                [window ; create a new window if none was provided
+                 (new frame%
+                      [label title]
+                      [width width]
+                      [height height]
+                      [style '()])])
     
     ; abstraheer de input-events
-    (field [mouse (new mouse%)]
-           [keyboard (new keyboard%)])
+    (field [mouse (new mouse-event-handler%)]
+           [keyboard (new keyboard-event-handler%)]
+           [events (new canvas-event-handler%)])
     
-    ; bespaar field lookups door objecten naar buiten te halen
-    (define*
-      [motion (chain mouse move)]
-      [wheel-roll (chain mouse wheel roll)]
-      [wheel-left (chain mouse wheel left)]
-      [wheel-right (chain mouse wheel right)]
-      [left-down (chain mouse left press)]
-      [left-up (chain mouse left release)]
-      [middle-down (chain mouse middle press)]
-      [middle-up (chain mouse middle release)]
-      [right-up (chain mouse right press)]
-      [right-down (chain mouse right release)])
-    
-    ; andere klassen die nodig zijn voor de interface
-    (field [window ; het venster-object
-            (new (class frame% (super-new))
-                 ; configuratie van het frame%-object
-                 [label title]
-                 [width width]
-                 [height height]
-                 [style '()])]
-           [canvas ; het canvas-object
-            (new (class canvas%
-                   (super-new)
-                   ; verwerk input die van het toetsenbord komt 
-                   (define/override (on-char event)
-                     (let ((code (send event get-key-code)))
-                       (case code
-                         ((wheel-up) (trigger wheel-roll wheel-sensitivity))
-                         ((wheel-down) (trigger wheel-roll (- wheel-sensitivity)))
-                         ((wheel-left) (trigger wheel-left))
-                         ((wheel-right) (trigger wheel-right))
-                         ((release) (trigger (chain (get-key keyboard (get-key-release-code event)) release)))
-                         (else (trigger (chain (get-key keyboard code) press))))))
-                   ; verwerk input die van de muis komt
-                   (define/override (on-event event)
-                     (let ((type (get-event-type event)))
-                       (case type
-                         ((motion) (trigger motion (get-x event) (get-y event)))
-                         ((left-down) (trigger left-down))
-                         ((left-up) (trigger left-up))
-                         ((middle-down) (trigger middle-down))
-                         ((middle-up) (trigger middle-up))
-                         ((right-up) (trigger right-up))
-                         ((right-down) (trigger right-down))))))
-                 ; configuratie van het canvas%-object
+     ; create the canvas container object
+    (field [canvas
+            (new evented-canvas%
+                 [events events]
+                 [mouse mouse]
+                 [keyboard keyboard]
                  [parent window]
                  [style '()])])
     
-    ; toon of verberg het venster
+    ; show or hide the screen
     (send window show shown?)
     
     ; naar deze bitmap wordt getekend
@@ -403,6 +439,7 @@
     
     ; push de huidige bitmap naar het scherm
     (define/public (update)
+      ; TODO: suggested to use (flush) and (suspend-flush)
       (draw-bitmap target buffer 0 0))
     
     ; om het venster zichtbaar te maken
@@ -415,49 +452,49 @@
     
     ; de zichtbare breedte teruggeven
     (define/public (get-width)
-      (let-values ([(width height) (get-size)])
-        width))
+      (get-canvas-width canvas))
     
     ; de zichtbare hoogte teruggeven
     (define/public (get-height)
-      (let-values ([(width height) (get-size)])
-        height))
+      (get-canvas-height canvas))
     
     ; hou alle gameloops bij in een event-handler%
-    (field [animations
-            (new (class event-handler%
-                   
-                   (inherit/super trigger) ; om een nieuw frame te tekenen
-                   (declare loop) ; houdt de gameloop zelf vast
-                   
-                   ; om de hoeveel tijd het frame moet worden ververst
-                   (init [framerate 30])
-                   
-                   ; framerate omzgezet naar milliseconden
-                   (define delta (/ 1000 framerate))
-                   
-                   ; deze tikfunctie roept de animaties om de zoveel milliseconden op
-                   (define (tick old-time)
-                     (let ((new-time (current-milliseconds)))
-                       (yield)
-                       (if (> (- new-time old-time) delta) ; wanneer de framerate overschreden is
-                           (begin ; start met renderen van een nieuw frame
-                             (trigger (/ (- new-time old-time) 1000)) ; voer alle animatiefuncties uit
-                             (update) ; breng de buffer over naar het scherm
-                             (clear) ; en leeg de buffer voor de volgende keer
-                             (queue-callback (thunk (loop new-time)) #t))
-                           (queue-callback (thunk (loop old-time)) #t)))) ; anders gewoon verder wachten
-                   
-                   (super-new)
-                   
-                   ; om de animaties te starten
-                   (define/public (start)
-                     (set! loop tick)
-                     (loop (current-milliseconds)))
-                   
-                   ; om de animaties te stoppen
-                   (define/public (stop)
-                     (set! loop (thunk 'stopped)))))])
+    (field
+     [animations
+      (new
+       (class event-handler%
+         
+         (inherit/super trigger) ; to draw a new frame
+         (declare loop) ; houdt de gameloop zelf vast
+         
+         ; om de hoeveel tijd het frame moet worden ververst
+         (init [framerate 30])
+         
+         ; framerate omzgezet naar milliseconden
+         (define delta (/ 1000 framerate))
+         
+         ; deze tikfunctie roept de animaties om de zoveel milliseconden op
+         (define (tick old-time)
+           (let ((new-time (current-milliseconds)))
+             (yield)
+             (if (> (- new-time old-time) delta) ; wanneer de framerate overschreden is
+                 (begin ; start met renderen van een nieuw frame
+                   (trigger (/ (- new-time old-time) 1000)) ; voer alle animatiefuncties uit
+                   (update) ; breng de buffer over naar het scherm
+                   (clear) ; en leeg de buffer voor de volgende keer
+                   (queue-callback (thunk (loop new-time)) #t))
+                 (queue-callback (thunk (loop old-time)) #t)))) ; anders gewoon verder wachten
+         
+         (super-new)
+         
+         ; om de animaties te starten
+         (define/public (start)
+           (set! loop tick)
+           (loop (current-milliseconds)))
+         
+         ; om de animaties te stoppen
+         (define/public (stop)
+           (set! loop (thunk 'stopped)))))])
     
     ; zet de stijl waarop een bepaald element moet getekend worden
     (define/public (set-brush/pen brush pen)
@@ -490,7 +527,7 @@
     ; de rotatie tijdelijk veranderen
     (define/public (use-rotation thunk rotation [centre-x 0] [centre-y 0])
       (use-transformation thunk (vector (get-initial-matrix) centre-x centre-y 1 1 rotation)))
-  
+    
     ; de schaal tijdelijk veranderen
     (define/public (use-scale thunk scale-x scale-y [centre-x 0] [centre-y 0])
       (use-transformation thunk (vector (get-initial-matrix) centre-x centre-y scale-x scale-y 0)))

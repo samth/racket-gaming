@@ -13,7 +13,6 @@
     ;Assumes the object's dispatcher always returns a procedure 
     (apply procedure parameters)))
 
-
 ; ADT tagged data
 ; ---------------
 

@@ -101,9 +101,9 @@
     (when (> (current-milliseconds) explode-time)
       (explode)))
   
-  (define (draw canvas)
-    (use-brush canvas color)
-    (draw-ellipse canvas
+  (define (draw graphics)
+    (use-brush graphics color)
+    (draw-ellipse graphics
                   (x (send-message physics position))
                   (y (send-message physics position))
                   (* strength firework-scale) (* strength firework-scale)))
@@ -124,7 +124,7 @@
                        #f)))
                 (send-message layer (add! sparkle))
                 (loop (- n 1)))
-              (debug "Sploosh!"))))
+              (console "Sploosh!"))))
     (send-message layer (remove! this)))
   
   this)
@@ -138,11 +138,11 @@
   (define (update! time-delta)
     (send-message physics (update! time-delta)))
   
-  (define (draw canvas)
+  (define (draw graphics)
     (let ((position (send-message physics position)))
-      (use-brush canvas color)
-      (use-rotation canvas
-                    (thunk (draw-rectangle canvas (- (/ (x cone-size) 2)) 0 (x cone-size) (y cone-size)))
+      (use-brush graphics color)
+      (use-rotation graphics
+                    (thunk (draw-rectangle graphics (- (/ (x cone-size) 2)) 0 (x cone-size) (y cone-size)))
                     (send-message physics rotation)
                     (+ (x (send-message physics position)) (/ (x cone-size) 2))
                     (y (send-message physics position)))))
@@ -178,13 +178,13 @@
 
 ;; Alles bijeenbrengen in een apart object
 
-(define (make-game canvas move-left-key move-right-key rotate-up-key rotate-down-key shoot-key big-key)
+(define (make-game graphics move-left-key move-right-key rotate-up-key rotate-down-key shoot-key big-key)
   
   (define fireworks (make-layer))
   
   (define cannon
     (make-cannon fireworks
-                 (2d (/ (get-width my-canvas) 2) ground-level)
+                 (2d (/ (get-width my-graphics) 2) ground-level)
                  (new brush% [color "grey"])))
 
   (chain move-left-key press (add! (thunk (send-message cannon (move! -)))))
@@ -197,40 +197,40 @@
   (chain rotate-up-key release (add! (send-message cannon stop-rotate)))
   (chain rotate-down-key release (add! (send-message cannon stop-rotate)))
   
-  (chain shoot-key press (add! (thunk (debug "POW! Here goes number ~a!" (+ (send-message fireworks (count)) 1)))))
+  (chain shoot-key press (add! (thunk (console "POW! Here goes number ~a!" (+ (send-message fireworks (count)) 1)))))
   (chain shoot-key release (add! (thunk (send-message cannon (shoot (random-in-range min-fire-power max-fire-power))))))
-  (chain big-key press (add! (thunk (debug "BOOM! Here comes the big one!"))))
+  (chain big-key press (add! (thunk (console "BOOM! Here comes the big one!"))))
   (chain big-key release (add! (thunk (send-message cannon (shoot max-fire-power (+ min-sparkles max-sparkles))))))
   
-  (define background (make-object bitmap% "stars.jpg"))
-  (define mask (make-object bitmap% "stars-mask.png" 'png/alpha))
-  (set-text-foreground canvas "yellow")
+  (define background (make-object bitmap% "../resources/stars.jpg"))
+  (define mask (make-object bitmap% "../resources/stars-mask.png" 'png/alpha))
+  (set-text-foreground graphics "yellow")
   
   (define (frame time-delta)
-    (use-document canvas (thunk (draw-bitmap canvas background 0 0)))
+    (use-document graphics (thunk (draw-bitmap graphics background 0 0)))
     (send-message fireworks (update-all time-delta))
-    (send-message fireworks (draw-all canvas))
+    (send-message fireworks (draw-all graphics))
     (send-message cannon (update! time-delta))
-    (send-message cannon (draw canvas))
+    (send-message cannon (draw graphics))
     (use-document
-     canvas
+     graphics
      (thunk
-      (draw-bitmap canvas mask 0 0)
-      (draw-text canvas "Use the arrow buttons to move and rotate the cannon" 250 550)
-      (draw-text canvas "Press space to shoot" 300 600)
-      (draw-text canvas "For the big one, press tab!" 350 650))))
+      (draw-bitmap graphics mask 0 0)
+      (draw-text graphics "Use the arrow buttons to move and rotate the cannon" 250 550)
+      (draw-text graphics "Press space to shoot" 300 600)
+      (draw-text graphics "For the big one, press tab!" 350 650))))
   
-  (chain canvas animations (add! frame))
+  (chain graphics animations (add! frame))
   
-  (dispatch (game) canvas fireworks cannon))
+  (dispatch (game) graphics fireworks cannon))
 
 ;; Een enkelvoudig spel starten
 
-(define my-canvas (make-graphics 1000 800))
-(define the-keyboard (chain my-canvas keyboard))
+(define my-graphics (make-graphics 1000 800))
+(define the-keyboard (chain my-graphics keyboard))
 
 (define my-game
-  (make-game my-canvas
+  (make-game my-graphics
              (chain the-keyboard (get-key 'left))
              (chain the-keyboard (get-key 'right))
              (chain the-keyboard (get-key 'up))
@@ -238,4 +238,4 @@
              (chain the-keyboard (get-key #\space))
              (chain the-keyboard (get-key #\tab))))
 
-(chain my-canvas animations (start))
+(chain my-graphics animations (start))

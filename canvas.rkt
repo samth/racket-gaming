@@ -1,34 +1,32 @@
 #lang racket/base
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;                            ;;
-;;     == CANVAS 2.0 ==       ;;
-;;  Gemaakt door Sam Vervaeck ;;
-;;                            ;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (require "constants.rkt"
-         "graphics.rkt")
+         (rename-in "graphics.rkt" [make-color make-native-color]))
 
 (provide make-image
+         make-color
+         
          red
          green
          blue
+         
+         put-pixel!
+         draw-line!
+         draw-image!
+         draw-text!
          fill-rectangle!
          fill-ellipse!
-         draw-line!
-         on-key!
+         
+         on-key!     
+         on-release! 
+         
          start-game-loop
-         (rename-out [current-milliseconds current-time])
-         make-color
-         draw-text!
-         put-pixel!)
+         (rename-out [current-milliseconds current-time]))
 
 ;; Algemene definities
 
-(define canvas (make-graphics))
-
-(extract canvas [keyboard keyboard])
+(define graphics (make-graphics))
+(extract graphics [keyboard keyboard])
 
 ;; Kleuren en stijlen
 
@@ -56,7 +54,7 @@
 
 (define*
   [some-brush (new brush%)]
-  [some-pen (new brush%)])
+  [some-pen (new pen%)])
 
 (struct color (native brush pen)) ; onthoud de brush en pen van een bepaalde kleur
 
@@ -64,19 +62,20 @@
   (make-object color% (* r 16) (* g 16) (* b 16) alpha))
 
 (define (use-brush! color) ; voor vormen die gevuld moeten worden
-  (set-brush canvas some-brush)
+  (set-brush graphics some-brush)
   (send brush set-color color)
-  (use-brush canvas brush))
+  (use-brush graphics brush))
 
 (define (use-pen! color) ; voor vormen die enkel uit lijnen bestaan
-  (set-pen canvas some-pen)
+  (set-pen graphics some-pen)
   (send pen set-color color)
-  (use-pen canvas pen))
+  (use-pen graphics pen))
 
 (define (use-font-color! color) ; alleen nodig voor tekst
-  (set-text-foreground canvas color))
+  (set-text-foreground graphics color))
 
-(set-font canvas font)
+(set-font graphics font)
+(define current-char-height (get-char-height graphics))
 
 (define*
   [red (make-color 15 0 0)]
@@ -91,35 +90,34 @@
 
 (define (put-pixel! x y color)
   (use-pen! color)
-  (draw-point canvas x y))
+  (draw-point graphics x y))
 
 (define (draw-line! x1 y1 x2 y2 color)
   (use-pen! color)
-  (draw-line canvas x1 y1 x2 y2))
+  (draw-line graphics x1 y1 x2 y2))
 
 (define (fill-rectangle! x y width height color)
   (use-brush! color)
-  (draw-rectangle canvas x y width height))
+  (draw-rectangle graphics x y width height))
 
 (define (fill-ellipse! x y width height color)
   (use-brush! color)
-  (draw-ellipse canvas x y width height))
+  (draw-ellipse graphics (- x (/ width 2)) (- y (/ height 2)) width height))
 
 (define (draw-text! x y text color)
   (use-font-color! color)
-  (use-document canvas (thunk (draw-text canvas text x (- (get-height canvas) y)))))
+  (use-document graphics (thunk (draw-text graphics text x (- (get-height graphics) y current-char-height)))))
 
 (define (draw-image! x y image)
-  (use-document canvas (thunk (draw-bitmap canvas image x (- (get-height canvas) y)))))
-
-(define (test)
-  (draw-image! 100 100 (make-image "examples/stars.jpg"))
-  (update-graphics canvas))
+  (use-document graphics (thunk (draw-bitmap graphics image x (- (get-height graphics) y)))))
 
 ;; Event listening
 
 (define (on-key! code proc)
   (chain keyboard (get-key code) press (add! proc)))
+
+(define (on-release! code proc)
+  (chain keyboard (get-key code) release (add! proc)))
 
 ;; Game loop en tijd
 
@@ -128,5 +126,5 @@
   (let loop ()
     (yield)
     (thunk)
-    (update-graphics canvas)
+    (update-graphics graphics)
     (queue-callback loop #t)))

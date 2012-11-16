@@ -1,6 +1,6 @@
 #lang racket/base
 
-(provide debug
+(provide console
          
          2d?
          2d
@@ -19,7 +19,7 @@
 (define-syntax-rule (define* [var name] ...)
   (begin (define var name) ...))
 
-(define (debug msg . vars)
+(define (console msg . vars)
   (display (apply format (string-append "[DEBUG] " msg) vars))
   (newline))
 

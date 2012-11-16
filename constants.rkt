@@ -48,13 +48,15 @@
 ; Lees meer over de mogelijke waarden van de fonts op
 ; http://docs.racket-lang.org/draw/font_.html
 ;
+
+(define FONT-COLOR "black")
 (define FONT-SIZE 12)
 (define FONT-FACE #f)
-(define FONT-FAMILY 'default)
+(define FONT-FAMILY 'roman)
 (define FONT-STYLE 'normal)
 (define FONT-WEIGHT 'normal)
 (define FONT-UNDERLINED #f)
-(define FONT-SMOOTHING 'default)
+(define FONT-SMOOTHING 'unsmoothed)
 (define FONT-SIZE-IN-PIXELS #f)
 (define FONT-HINTING 'aligned)
 

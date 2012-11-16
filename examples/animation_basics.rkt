@@ -118,5 +118,5 @@
 
 (set-text-foreground example "white")
 (draw-text example "Press space to start the animations!" 100 200)
-(yield)
+
 (update-graphics example)
