@@ -5,21 +5,23 @@
 
 (provide make-image
          make-color
-         
+
+         black
+         white
          red
          green
          blue
-         
+
          put-pixel!
          draw-line!
          draw-image!
          draw-text!
          fill-rectangle!
          fill-ellipse!
-         
-         on-key!     
-         on-release! 
-         
+
+         on-key!
+         on-release!
+
          start-game-loop
          (rename-out [current-milliseconds current-time]))
 
@@ -78,6 +80,8 @@
 (define current-char-height (get-char-height graphics))
 
 (define*
+  [black (make-color 0 0 0)]
+  [white (make-color 15 15 15)]
   [red (make-color 15 0 0)]
   [green (make-color 0 15 0)]
   [blue (make-color 0 0 15)])
