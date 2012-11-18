@@ -1,5 +1,3 @@
-#lang r5rs
-
 (#%require "../canvas.rkt")
 (#%require (only racket/base error)) ;for error
 
@@ -131,27 +129,48 @@
 ; ----
 ; Instantiates a (ball) avatar with the given radius and x-coordinate
 (define (make-avatar radius x color)
-  (let ( ;current position; as value, take the avatar's initial position
-         ;current speed; as value, take the avatar's initial speed
-        ) ;avatar's speed in case of user input (no horizontal speed, only vertical "up" speed)
-  
-    ;Still needed: selectors, mutators, .. for ADT fields
-    
+  (let ( ; current position; as value, take the avatar's initial position
+         ; current speed; as value, take the avatar's initial speed
+         ; avatar's speed in case of user input (no horizontal speed, only vertical "up" speed)
+         ;; Start
+         (curr-pos (make-coordinates x 0))
+         (curr-vel (make-speed 0 0))
+         (jump-vel-y 10)
+         ;; End
+         )
+
+    ; Still needed: selectors, mutators, .. for ADT fields
+    ;; Start
+    (define (get-position) curr-pos)
+    (define (get-speed)    curr-vel)
+    (define (get-radius)   radius)
+    (define (get-color)    color)
+
+    (define (set-position! new-pos)
+      (set! curr-pos new-pos))
+    (define (set-speed! new-vel)
+      (set! curr-vel new-vel))
+
+    (define (up!)
+      (let ((new-vel (make-speed (speed-x curr-vel) jump-vel-y)))
+        (set! curr-vel new-vel)))
+    ;; End
+
     ;Draws the avatar on the given game UI
     (define (draw ui)
       ;does not draw directly, but asks the UI to draw the avatar instead
       ;this way, the game can be configured with a different UI
       (send-message ui 'draw-avatar dispatch))
-    
+
     ;Processes the events (= user input, sensor input) recorded by event-recorder
     (define (process-events event-recorder)
       (let ((event (send-message event-recorder 'last-recorded-event)))
         ;TODO: this might be slow as there are many events not related to an avatar   
         (case event
           ((up) (up!)) ;Key-up event was recorded; give avatar a vertical (up) speed
-          
+
           (else 'do-nothing)))) ;Not an event a avatar reacts to
-    
+
     (define (dispatch message)
       (case message
         ((position) get-position)
@@ -163,7 +182,7 @@
         ((color) get-color)
         ((draw) draw)
         ((process-events) process-events)
-        
+
         (else (error 'avatar "unknown message ~a" message))))
     dispatch))
 
@@ -171,17 +190,31 @@
 ; Instantiates a obstacle with the x- and y-coordinate
 (define (make-obstacle width height x y color)
   (let (;current position; as value, take the obstacle's initial position
-         ;current speed; as value, take the obstacle's initial (constant) speed (it moves to the left!!)
+        ;current speed; as value, take the obstacle's initial (constant) speed (it moves to the left!!)
+        ;; Start
+        (curr-pos (make-coordinates x y))
+        (curr-vel (make-speed -1 0))
+        ;; End
         )
-    
+
     ;Still needed: selectors, mutators, .. for ADT fields
-    
+    ;; Start
+    (define (get-position) curr-pos)
+    (define (get-speed)    curr-vel)
+    (define (get-width)    width)
+    (define (get-height)   height)
+    (define (get-color)    color)
+
+    (define (set-position! new-pos)
+      (set! curr-pos new-pos))
+    ;; End
+
     ;Draws the obstacle on the given game UI
     (define (draw ui)
       ;does not draw directly, but asks the UI to draw the obstacle instead
       ;this way, the game can be configured with a different UI
-      )
-    
+      (send-message ui 'draw-obstacle dispatch))
+
     (define (dispatch message)
       (case message
         ((position) get-position)
@@ -191,7 +224,7 @@
         ((height) get-height)
         ((color) get-color)
         ((draw) draw)
-        
+
         (else (error 'obstacle "unknown message ~a" message))))
     dispatch))
 
@@ -205,23 +238,46 @@
   (let ((window-w 800)
         (window-h 600)
         (window-c white))
-    
+
     ;Clears the window by simply painting it entirely in a certain color
     (define (clear)
       (fill-rectangle! 0 0 window-w window-h window-c))
-    
+
     ;Draws the given avatar
     (define (draw-avatar avatar)
       ;TODO: write the code for drawing on avatar on the screen
       ;see Canvas.rkt
+      ;; Start
+      (let ((pos    (send-message avatar 'position))
+            (radius (send-message avatar 'radius))
+            (color  (send-message avatar 'color)))
+        (fill-ellipse!
+          (coordinates-x pos)
+          (coordinates-y pos)
+          radius
+          radius
+          color))
+      ;; End
       )
-    
+
     ;Draws the given obstacle
     (define (draw-obstacle obstacle)
       ;TODO: write the code for drawing on obstacle on the screen
       ;see Canvas.rkt
+      ;; Start
+      (let ((pos    (send-message obstacle 'position))
+            (width  (send-message obstacle 'width))
+            (height (send-message obstacle 'height))
+            (color  (send-message obstacle 'color)))
+        (fill-rectangle!
+          (coordinates-x pos)
+          (coordinates-y pos)
+          width
+          height
+          color))
+      ;; End
       )
-    
+
     (define (dispatch message)
       (case message
         ((clear) clear)
@@ -229,7 +285,7 @@
         ((draw-obstacle) draw-obstacle)
         ((width) (lambda () window-w))
         ((height) (lambda () window-h))
-        
+
         (else (error 'canvas-ui "unknown message ~a" message))))
     dispatch))
 
@@ -239,7 +295,7 @@
 (define (make-physics-engine gravity w h)
   (let ((previous-time (current-time))
         (dt 0))
-    
+
     ; Calculate new position, based on given position & speed
     (define (move-coordinates position speed)
       (let ((px (coordinates-x position))
@@ -247,38 +303,50 @@
             (vx (speed-x speed))
             (vy (speed-y speed)))
         (make-coordinates
-         (+ px (* vx dt))
-         (+ py (* vy dt)))))
-    
+          (+ px (* vx dt))
+          (+ py (* vy dt)))))
+
     ;Update the current time frame
     (define (update-time!)
       (let ((time (current-time)))
         (set! dt (/ (- time previous-time) 10))
         (set! previous-time time)))
-    
+
     ;Change the speed, based on gravity
     (define (update-speed speed)
       (make-speed
-       (speed-x speed)
-       (- (speed-y speed) (* gravity dt))))
-    
+        (speed-x speed)
+        (- (speed-y speed) (* gravity dt))))
+
     ;Move avatar
     (define (move-avatar avatar)
+      ;; Start
+      (let* ((curr-pos (send-message avatar 'position))
+             (curr-vel (send-message avatar 'speed))
+             (new-pos  (move-coordinates curr-pos curr-vel)))
+        (send-message avatar 'set-position! new-pos))
+      ;; End
       )
-    
+
     ;Move obstacle
     (define (move-obstacle obstacle)
-     )
-    
-    
+      ;; Start
+      (let* ((curr-pos (send-message obstacle 'position))
+             (curr-vel (send-message obstacle 'speed))
+             (new-pos  (move-coordinates curr-pos curr-vel)))
+        (send-message obstacle 'set-position! new-pos))
+      ;; End
+      )
+
+
     (define (dispatch message)
       (case message
         ((move-avatar) move-avatar)
         ((move-obstacle) move-obstacle)
         ((update-time!) update-time!)
-        
+
         (else (error 'physics-engine "unknown message ~a" message))))
-    
+
     dispatch))
 
 
@@ -287,8 +355,8 @@
 
 ; Using Canvas.rkt, converts the last keyboard input to a game event
 (define (make-canvas-event-recorder)
-  (let ((event 'no-event)) 
-    
+  (let ((event 'no-event))
+
     ;Initializes the recorder by linking it to Canvas.rkt
     (define (initialize)
       (clear)
@@ -296,19 +364,19 @@
       (on-key! 'down (lambda () (set! event 'down)))
       (on-key! 'right (lambda () (set! event 'right)))
       (on-key! 'left (lambda () (set! event 'left))))
-    
+
     ;Erases the last recorded event by resetting it to a dummy value
     (define (clear)
       (set! event 'no-event))
-    
+
     ;Returns the last recorded event
     ;TODO: in case of multiple input devices, recording a single keystroke won't suffice 
-    
+
     (define (last-recorded-event)
       event)
-    
+
     (initialize)
-    
+
     (define (dispatch message)
       (case message
         ((clear) clear)
@@ -317,7 +385,7 @@
     dispatch))
 
 
-; Game Loop 
+; Game Loop
 ; ---------
 
 ; Creates a game with the following parameters
@@ -327,45 +395,55 @@
 ; - event-recorder: the source of events for the game (e.g., keyboard input -> event)
 
 ;TODO: this loop clears and redraws the entire screen, even if nothing has changed
-(define (make-game-loop game-avatar game-obstacles ui event-recorder)
-  (let ((p-engine (make-physics-engine 
-                   9.81 
-                   (send-message ui 'width) 
-                   (send-message ui 'height))))
-    
+(define (make-game-loop game-avatar game-obstacles ui)
+  (let ((p-engine (make-physics-engine
+                    9.81
+                    (send-message ui 'width)
+                    (send-message ui 'height))))
+
     ;One iteration of the game loop
     (define (game-advancer)
       ;Clear (erase) the user interface
       ;...
       ;Set how much time has passed since last iteration
       ;...
-      
-      ;For each obstacle, 
+
+      ;For each obstacle,
       (for-each (lambda (obstacle)
-                 ;Think what needs to be done in each game loop for each obstacle!
-                )
+                  ;Think what needs to be done in each game loop for each obstacle!
+                  ;; Start
+                  (send-message obstacle 'draw ui)
+                  ;; End
+                  )
                 game-obstacles)
-      
-      ;For the avatar, thinks what needs to be done in each game loop. 
-      ;....
-                
+
+      ;For the avatar, thinks what needs to be done in each game loop.
+      ;; Start
+      (send-message game-avatar 'draw ui)
+      ;; End
+
       ;Clear the recorded user input events
-      (send-message event-recorder 'clear))
-    
+      ; (send-message event-recorder 'clear))
+      )
+
     (define (start)
       (start-game-loop game-advancer))
-    
+
     (define (dispatch message)
       (case message
         ((start) start)
-        
+
         (else (error 'game-loop "unknown message ~a" message))))
     dispatch))
 
 
 ;Start a game with one avatar and two obstacles
-(send-message (make-game-loop 
-               )
+(send-message (make-game-loop
+                ;; Start
+                (make-avatar 20 250 blue)
+                (list (make-obstacle 100 100 400 0 red) (make-obstacle 100 300 550 0 red))
+                (make-canvas-ui)
+                ;; End
+                )
               'start)
-
 
