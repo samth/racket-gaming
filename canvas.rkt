@@ -9,7 +9,7 @@
 ; drawing images and providing more colors.
 
 (require "constants.rkt"
-         (rename-in "graphics.rkt" [make-color make-native-color]))
+         (rename-in "gaming.rkt" [make-color make-native-color]))
 
 (provide make-image
          make-color
@@ -31,6 +31,7 @@
          on-release!
 
          start-game-loop
+         stop-game-loop
          (rename-out [current-milliseconds current-time]))
 
 ;; General definitions

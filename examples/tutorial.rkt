@@ -1,14 +1,8 @@
 #lang racket/base
 
-(#%require "../graphics.rkt") ; laad de library uit de bovenstaande directory
+(require "shared.rkt")
 
-;; Enkele hulpfuncties
-
-(define (write-line msg)
-  (display msg)
-  (newline))
-
-;; Spelen met het graphics zelf
+;; Using the graphics library
 
 (define my-graphics (make-graphics 400 300 "Simple Graphics Example")) ; een eenvoudig canvas aanmaken
 
@@ -27,12 +21,12 @@
        [title "Mini canvas"]
        [shown? #f]))
 
-;; Luisteren naar events
+;; Listening to events
 
 ; Om alles mooi en netjes te houden nesten we objecten in andere objecten.
 ; Al dit wordt makkelijk toegankelijk via een speciale "chain" special form.
 
-(chain my-graphics keyboard (get-key #\a) press (add! (lambda () (display "A pressed"))))
+(chain my-graphics keyboard (get-key #\a) press (add! (thunk (console "A pressed"))))
 ;
 ; NOOT: "press" is hier een object, geen operatie
 ;
@@ -48,12 +42,12 @@
 (define the-keyboard (chain my-graphics keyboard))
 
 (chain* the-keyboard
-  ((get-key #\a) press (add! (thunk (write-line "A pressed"))))
-  ((get-key #\a) release (add! (thunk (write-line "A released"))))
-  ((get-key #\A) press (add! (thunk (write-line "SHIFT+A pressed"))))
-  ((get-key #\space) press (add! (thunk (write-line "Space pressed"))))
-  ((get-key #\space) release (add! (thunk (write-line "Space released"))))
-  ((get-key #\return) press (add! (thunk (write-line "Enter pressed")))))
+  [(get-key #\a) press (add! (thunk (console "A pressed")))]
+  [(get-key #\a) release (add! (thunk (console "A released")))]
+  [(get-key #\A) press (add! (thunk (console "SHIFT+A pressed")))]
+  [(get-key #\space) press (add! (thunk (console "Space pressed")))]
+  [(get-key #\space) release (add! (thunk (console "Space released")))]
+  [(get-key #\return) press (add! (thunk (console "Enter pressed")))])
 
 ;; Kleuren en stijlen aanmaken
 

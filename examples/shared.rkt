@@ -1,5 +1,7 @@
 #lang racket/base
 
+(require "../gaming.rkt")
+
 (provide console
          
          2d?
@@ -14,16 +16,13 @@
          
          make-layer)
 
-;; Enkele metadefinities
-
-(define-syntax-rule (define* [var name] ...)
-  (begin (define var name) ...))
+;; Meta definitions
 
 (define (console msg . vars)
   (display (apply format (string-append "[DEBUG] " msg) vars))
   (newline))
 
-;; Tweedimensionele vectoren
+;; Two dimensional vectors
 
 (define*
   [2d? complex?]
@@ -33,7 +32,7 @@
   [x real-part]
   [y imag-part])
 
-;; Objecten in scheme
+;; Dispatcher objects
 
 (define-syntax-rule (dispatch (object-name) local-var ...)
   (lambda (msg)
@@ -50,7 +49,7 @@
     [(_ start field expr ...)
      (send-message (start `field) expr ...)]))
 
-;; Om te kunnen tekenen in lagen
+;; Drawing in layers
 
 (define (make-layer . objects)
   (define (add! object)

@@ -8,10 +8,8 @@
 ;
 ; This is a re-implementation of an old example 
 ; back from 2011 with this new library.
-;
 
-(require "../graphics.rkt"
-         "shared.rkt")
+(require "shared.rkt")
 
 ;; Instellingen
 

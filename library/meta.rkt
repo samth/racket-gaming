@@ -13,12 +13,15 @@
 
 (provide define-expression-group
          define-recursive-syntax
-         define* 
+         
+         define*
          declare
          define-generics
+         
          class-constructor
          class-predicate
          class-method-accessor
+         
          chain
          chain*
          extract)

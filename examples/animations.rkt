@@ -1,6 +1,6 @@
 #lang racket
 
-(require "../graphics.rkt")
+(require "shared.rkt")
 
 ;; Tweedimensionele vectoren
 

@@ -4,8 +4,7 @@
 ; Coordinates in racket  ;
 ;-------------------------
 
-(require "../graphics.rkt"
-           "shared.rkt")
+(require "shared.rkt")
 
 (define (make-grid x-spacing y-spacing)
   
@@ -45,8 +44,8 @@
 ;; Drawing some shapes
 
 (define*
-  (test-image (make-object bitmap% "../resources/smiley.jpg"))
-  (test-brush (make-brush #:color "blue")))
+  [test-image (make-object bitmap% "../resources/smiley.jpg")]
+  [test-brush (make-brush #:color "blue")])
 
 (define (test-shapes)
   (use-brush graphics test-brush)
