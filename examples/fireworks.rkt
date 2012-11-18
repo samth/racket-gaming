@@ -1,15 +1,17 @@
 #lang racket/base
 
+; Fireworks Game
+; ==============
+;
+; A small game in which you can shoot firework by
+; using the arrow keys and pressing space.
+;
+; This is a re-implementation of an old example 
+; back from 2011 with this new library.
+;
+
 (require "../graphics.rkt"
          "shared.rkt")
-
-;;;;;;;;;;;;;;;
-;; Fireworks ;;
-;;;;;;;;;;;;;;;
-;
-; Een herimplementatie van de oude versie uit 2011
-; met de nieuwe library.
-;
 
 ;; Instellingen
 
@@ -124,7 +126,9 @@
                        #f)))
                 (send-message layer (add! sparkle))
                 (loop (- n 1)))
-              (console "Sploosh!"))))
+              (begin
+                (console "Sploosh!")
+                (play-sound "../resources/bang.wav" #t)))))
     (send-message layer (remove! this)))
   
   this)
@@ -157,6 +161,7 @@
     (send-message physics (stabilize!)))
   
   (define (shoot power [custom-sparkles #f])
+    (play-sound "../resources/shoot.wav" #t) ; experimental
     (let ((firework
            (make-firework
              target
@@ -237,5 +242,3 @@
              (chain the-keyboard (get-key 'down))
              (chain the-keyboard (get-key #\space))
              (chain the-keyboard (get-key #\tab))))
-
-(chain my-graphics animations (start))

@@ -17,7 +17,7 @@
 
 ; of ook:
 
-(show-graphics my-graphics) ; het canvas verbergen
+(hide-graphics my-graphics) ; het canvas verbergen
 (show-graphics my-graphics) ; en terug zichtbaar maken
 
 (define extra-graphics ; uitgebreidere opties
@@ -33,11 +33,6 @@
 ; Al dit wordt makkelijk toegankelijk via een speciale "chain" special form.
 
 (chain my-graphics keyboard (get-key #\a) press (add! (lambda () (display "A pressed"))))
-
-; In nederlands: voer een lambda uit wanneer de press-gebeurtenis van een
-; zekere toets #\a van het toetsenbord van my-graphics wordt geactiveerd.
-; Dit valt te vergelijken met de dispatchnotatie in de lessen van structuur van
-; computerprogramma's: ((((my-graphics 'keyboard) 'get-key #\A) 'press) 'add! (lambda () ...))
 ;
 ; NOOT: "press" is hier een object, geen operatie
 ;

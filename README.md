@@ -15,8 +15,8 @@ games with the native racket/gui library more convenient.
 
 ## Usage ##
 
-There are two choices: `(#%require "graphics/graphics.rkt")` includes the full library and
-`(#%require "graphics/canvas.rkt")` imports the simplified library (recommended for beginners).
+There are two choices: `graphics.rkt` includes the full library while
+`canvas.rkt` imports the simplified library (recommended for beginners).
 
 Please read the [wikipages](http://github.com/samvv/racket-gaming/wiki)
 for more information on how to use this library.

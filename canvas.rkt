@@ -1,5 +1,13 @@
 #lang racket/base
 
+; Canvas backport of the graphics library
+; =======================================
+;
+; This file simulates the functionality of
+; the first version of the graphics library.
+; Above that, it adds some extra features, such as
+; drawing images and providing more colors.
+
 (require "constants.rkt"
          (rename-in "graphics.rkt" [make-color make-native-color]))
 
@@ -25,12 +33,16 @@
          start-game-loop
          (rename-out [current-milliseconds current-time]))
 
-;; Algemene definities
+;; General definitions
 
 (define graphics (make-graphics))
-(extract graphics [keyboard keyboard])
 
-;; Kleuren en stijlen
+(extract graphics
+  [the-keyboard keyboard]
+  [the-mouse mouse]
+  [the-animations animations])
+
+;; Colors and styles
 
 (define* 
   [font (make-font
@@ -86,11 +98,14 @@
   [green (make-color 0 15 0)]
   [blue (make-color 0 0 15)])
 
-;; Afbeeldingen
+;; Images
 
-(define make-image (make-constructor bitmap%))
+(define make-image (class-constructor bitmap%))
 
-;; Afgeleide tekenoperates
+(define (draw-image! x y image)
+  (use-document graphics (thunk (draw-bitmap graphics image x (- (get-height graphics) y)))))
+
+;; Standard drawing operations
 
 (define (put-pixel! x y color)
   (use-pen! color)
@@ -112,23 +127,22 @@
   (use-font-color! color)
   (use-document graphics (thunk (draw-text graphics text x (- (get-height graphics) y current-char-height)))))
 
-(define (draw-image! x y image)
-  (use-document graphics (thunk (draw-bitmap graphics image x (- (get-height graphics) y)))))
-
 ;; Event listening
 
 (define (on-key! code proc)
-  (chain keyboard (get-key code) press (add! proc)))
+  (chain the-keyboard (get-key code) press (add! proc)))
 
 (define (on-release! code proc)
-  (chain keyboard (get-key code) release (add! proc)))
+  (chain the-keyboard (get-key code) release (add! proc)))
 
-;; Game loop en tijd
+;; Game looping and timekeeping
 
-; deze wordt opnieuw geimplementeerd voor hogere performantie
-(define (start-game-loop thunk)
-  (let loop ()
-    (yield)
-    (thunk)
-    (update-graphics graphics)
-    (queue-callback loop #t)))
+(define (start-game-loop thunk [pass-time-delta? #f])
+  (chain* the-animations
+    ((add! (if pass-time-delta? thunk (lambda (delta) (thunk)))))
+    ((enable!))))
+
+(define (stop-game-loop)
+  (chain* the-animations
+    ((clear!))
+    ((disable!))))
