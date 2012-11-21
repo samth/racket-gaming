@@ -392,7 +392,7 @@
 ; - event-recorder: the source of events for the game (e.g., keyboard input -> event)
 
 ;TODO: this loop clears and redraws the entire screen, even if nothing has changed
-(define (make-game-loop game-avatar game-obstacles ui physics-engine)
+(define (make-game-loop game-avatar game-obstacles ui physics-engine event-recorder)
 
   ;One iteration of the game loop
   (define (game-advancer)
@@ -413,6 +413,9 @@
 
     ;For the avatar, thinks what needs to be done in each game loop.
     ;; Start
+    (send-message game-avatar 'process-events event-recorder)
+    (send-message event-recorder 'clear)
+
     (send-message physics-engine 'move-avatar game-avatar)
     (send-message game-avatar 'draw ui)
 
@@ -441,6 +444,7 @@
                 (list (make-obstacle 100 100 400 0 red) (make-obstacle 100 300 550 0 red))
                 (make-canvas-ui)
                 (make-physics-engine 0.6)
+                (make-canvas-event-recorder)
                 ;; End
                 )
               'start)
