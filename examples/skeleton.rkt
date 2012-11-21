@@ -133,8 +133,8 @@
          ; current speed; as value, take the avatar's initial speed
          ; avatar's speed in case of user input (no horizontal speed, only vertical "up" speed)
          ;; Start
-         (curr-pos (make-coordinates x 0))
-         (curr-vel (make-speed 0 0))
+         (curr-pos (make-coordinates x 100))
+         (curr-vel (make-speed 0 20))
          (jump-vel-y 10)
          ;; End
          )
@@ -165,7 +165,7 @@
     ;Processes the events (= user input, sensor input) recorded by event-recorder
     (define (process-events event-recorder)
       (let ((event (send-message event-recorder 'last-recorded-event)))
-        ;TODO: this might be slow as there are many events not related to an avatar   
+        ;TODO: this might be slow as there are many events not related to an avatar
         (case event
           ((up) (up!)) ;Key-up event was recorded; give avatar a vertical (up) speed
 
@@ -239,10 +239,6 @@
         (window-h 600)
         (window-c white))
 
-    ;Clears the window by simply painting it entirely in a certain color
-    (define (clear)
-      (fill-rectangle! 0 0 window-w window-h window-c))
-
     ;Draws the given avatar
     (define (draw-avatar avatar)
       ;TODO: write the code for drawing on avatar on the screen
@@ -280,7 +276,6 @@
 
     (define (dispatch message)
       (case message
-        ((clear) clear)
         ((draw-avatar) draw-avatar)
         ((draw-obstacle) draw-obstacle)
         ((width) (lambda () window-w))
@@ -292,7 +287,7 @@
 
 ; Physics Engine
 ; --------------
-(define (make-physics-engine gravity w h)
+(define (make-physics-engine gravity)
   (let ((previous-time (current-time))
         (dt 0))
 
@@ -309,7 +304,7 @@
     ;Update the current time frame
     (define (update-time!)
       (let ((time (current-time)))
-        (set! dt (/ (- time previous-time) 10))
+        (set! dt (/ (- time previous-time) 30))
         (set! previous-time time)))
 
     ;Change the speed, based on gravity
@@ -323,8 +318,10 @@
       ;; Start
       (let* ((curr-pos (send-message avatar 'position))
              (curr-vel (send-message avatar 'speed))
-             (new-pos  (move-coordinates curr-pos curr-vel)))
-        (send-message avatar 'set-position! new-pos))
+             (new-vel  (update-speed curr-vel))
+             (new-pos (move-coordinates curr-pos curr-vel)))
+        (send-message avatar 'set-position! new-pos)
+        (send-message avatar 'set-speed! new-vel))
       ;; End
       )
 
@@ -395,46 +392,46 @@
 ; - event-recorder: the source of events for the game (e.g., keyboard input -> event)
 
 ;TODO: this loop clears and redraws the entire screen, even if nothing has changed
-(define (make-game-loop game-avatar game-obstacles ui)
-  (let ((p-engine (make-physics-engine
-                    9.81
-                    (send-message ui 'width)
-                    (send-message ui 'height))))
+(define (make-game-loop game-avatar game-obstacles ui physics-engine)
 
-    ;One iteration of the game loop
-    (define (game-advancer)
-      ;Clear (erase) the user interface
-      ;...
-      ;Set how much time has passed since last iteration
-      ;...
+  ;One iteration of the game loop
+  (define (game-advancer)
+    ;Clear (erase) the user interface
+    ;...
+    ;Set how much time has passed since last iteration
+    ;...
 
-      ;For each obstacle,
-      (for-each (lambda (obstacle)
-                  ;Think what needs to be done in each game loop for each obstacle!
-                  ;; Start
-                  (send-message obstacle 'draw ui)
-                  ;; End
-                  )
-                game-obstacles)
+    ;For each obstacle,
+    (for-each (lambda (obstacle)
+                ;Think what needs to be done in each game loop for each obstacle!
+                ;; Start
+                (send-message physics-engine 'move-obstacle obstacle)
+                (send-message obstacle 'draw ui)
+                ;; End
+                )
+              game-obstacles)
 
-      ;For the avatar, thinks what needs to be done in each game loop.
-      ;; Start
-      (send-message game-avatar 'draw ui)
-      ;; End
+    ;For the avatar, thinks what needs to be done in each game loop.
+    ;; Start
+    (send-message physics-engine 'move-avatar game-avatar)
+    (send-message game-avatar 'draw ui)
 
-      ;Clear the recorded user input events
-      ; (send-message event-recorder 'clear))
-      )
+    (send-message physics-engine 'update-time!)
+    ;; End
 
-    (define (start)
-      (start-game-loop game-advancer))
+    ;Clear the recorded user input events
+    ; (send-message event-recorder 'clear))
+    )
 
-    (define (dispatch message)
-      (case message
-        ((start) start)
+  (define (start)
+    (start-game-loop game-advancer))
 
-        (else (error 'game-loop "unknown message ~a" message))))
-    dispatch))
+  (define (dispatch message)
+    (case message
+      ((start) start)
+
+      (else (error 'game-loop "unknown message ~a" message))))
+  dispatch)
 
 
 ;Start a game with one avatar and two obstacles
@@ -443,6 +440,7 @@
                 (make-avatar 20 250 blue)
                 (list (make-obstacle 100 100 400 0 red) (make-obstacle 100 300 550 0 red))
                 (make-canvas-ui)
+                (make-physics-engine 0.6)
                 ;; End
                 )
               'start)
