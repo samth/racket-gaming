@@ -1,4 +1,4 @@
-#lang racket/base
+#lang racket/gui
 
 ; Syntax Special Forms
 ; ====================
@@ -24,7 +24,7 @@
 (define-syntax-rule
   (define-recursive-syntax (syntax-name base-expr ...)
     [(case-expr ...) transform-expr] ...)
-  (define-syntax syntax-name 
+  (define-syntax syntax-name
     (syntax-rules ()
       [(_ base-expr ...) (void)]
       [(_ base-expr ... case-expr ... exps (... ...))

@@ -24,8 +24,7 @@
 
 (require racket/gui
          "library/special-forms.rkt"
-         "library/meta.rkt"
-         "library/events.rkt"
+         "library/event.rkt"
          "library/game-canvas.rkt"
          "library/input-devices.rkt"
          "library/graphics.rkt")
@@ -33,8 +32,7 @@
 (provide (all-from-out
           racket/gui
           "library/special-forms.rkt"
-          "library/meta.rkt"
-          "library/events.rkt"
+          "library/event.rkt"
           "library/game-canvas.rkt"
           "library/input-devices.rkt"
           "library/graphics.rkt"))
