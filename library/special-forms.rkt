@@ -1,11 +1,7 @@
-#lang racket/gui
+#lang racket/base
 
-; Library meta definitions
-; ========================
-;
-; Procedures, variables and special forms that are
-; applicable to the entire library and might be
-; usefull in other programs as well.
+; Syntax Special Forms
+; ====================
 ;
 ; Keep the library clean by storing definitions of
 ; special forms in this file wherever possible. That
@@ -18,27 +14,11 @@
          declare
          define-generics
          
-         class-constructor
-         class-predicate
-         class-method-accessor
-         
          chain
          chain*
          extract)
 
-;; General definitions
-
-; to group expressions of the same type
-(define-syntax-rule (define-expression-group group-tag grouper-name)
-  (define-syntax-rule (grouper-name [expr (... ...)] (... ...))
-    (begin (group-tag expr (... ...)) (... ...))))
-
-; to group variable definitions
-(define-expression-group define define*)
-
-; to reserve a mutable variable
-(define-syntax-rule (declare var ...)
-  (begin (define var (void)) ...))
+;; Meta syntax forms
 
 ; applies a tranform-expr to all expressions after base-expr
 (define-syntax-rule
@@ -51,22 +31,21 @@
        (begin transform-expr (syntax-name base-expr ... exps (... ...)))]
       ...)))
 
+; to group expressions of the same type
+(define-syntax-rule (define-expression-group group-tag grouper-name)
+  (define-syntax-rule (grouper-name [expr (... ...)] (... ...))
+    (begin (group-tag expr (... ...)) (... ...))))
+
+;; General definitions
+
+; to group variable definitions
+(define-expression-group define define*)
+
+; to reserve a mutable variable
+(define-syntax-rule (declare var ...)
+  (begin (define var (void)) ...))
+
 ;; Classes and objects
-
-; to convert a method into a generic procedure
-(define (class-method-accessor class/interface method-name)
-  (let ((operation (make-generic class/interface method-name)))
-    (lambda (object . args) (send-generic object operation . args))))
-
-; to create a procedural object constructor
-(define (class-constructor class)
-  (lambda args (apply make-object class args)))
-
-; to create a predicate that checks if an object is instance of a class
-(define (class-predicate class)
-  (if (class? class)
-      (lambda (object) (is-a? object class))
-      (error 'class-predicate "~a is not a class" class)))
 
 ; to define generics of a class or interface
 (define-syntax define-generics

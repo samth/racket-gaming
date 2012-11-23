@@ -42,49 +42,6 @@
     (random-in-range min-lumen 255)
     (random-in-range min-lumen 255)))
 
-;; Simulatie van fysiche eigenschappen
-
-(define (make-physics position speed gravity rotation angular-velocity)
-  
-  (define (update! time-delta)
-    (set! position (+ position (* speed time-delta)))
-    (set! speed (- speed (* gravity time-delta)))
-    (set! rotation (+ rotation (* time-delta angular-velocity))))
-  
-  (define (set-position! new-position)
-    (set! position new-position))
-  (define (set-speed! new-speed)
-    (set! speed new-speed))
-  (define (set-gravity! new-gravity)
-    (set! gravity new-gravity))
-  (define (set-rotation! new-rotation)
-    (set! rotation new-rotation))
-  (define (set-angular-velocity! new-angular-velocity)
-    (set! angular-velocity new-angular-velocity))
-  
-  (define (halt!)
-    (set! speed 0))
-  (define (float!)
-    (set! gravity 0))
-  (define (stabilize!)
-    (set! angular-velocity 0))
-  
-  (dispatch (physics)
-    update!
-    position
-    speed
-    gravity
-    rotation
-    angular-velocity
-    set-position!
-    set-speed!
-    set-gravity!
-    set-rotation!
-    set-angular-velocity!
-    halt!
-    float!
-    stabilize!))
-
 ;; Het echte vuurwerk
 
 (define (make-firework layer position speed strength color [new? #t])

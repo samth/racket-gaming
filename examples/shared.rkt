@@ -2,7 +2,9 @@
 
 (require "../gaming.rkt")
 
-(provide console
+(provide (all-from-out "../gaming.rkt")
+         
+         console
          
          2d?
          2d
@@ -14,23 +16,14 @@
          dispatch
          send-message
          
-         make-layer)
+         make-layer
+         make-physics)
 
 ;; Meta definitions
 
 (define (console msg . vars)
   (display (apply format (string-append "[DEBUG] " msg) vars))
   (newline))
-
-;; Two dimensional vectors
-
-(define*
-  [2d? complex?]
-  [rectangular make-rectangular]
-  [polar make-polar]
-  [2d rectangular]
-  [x real-part]
-  [y imag-part])
 
 ;; Dispatcher objects
 
@@ -48,6 +41,16 @@
      (send-message ((start `method) args ...) expr ...)]
     [(_ start field expr ...)
      (send-message (start `field) expr ...)]))
+
+;; Two-dimensional vectors
+
+(define*
+  [2d? complex?]
+  [rectangular make-rectangular]
+  [polar make-polar]
+  [2d rectangular]
+  [x real-part]
+  [y imag-part])
 
 ;; Drawing in layers
 
@@ -71,3 +74,51 @@
     add!
     remove!
     count))
+
+;; A small physics engine
+
+(define (make-physics position speed gravity rotation angular-velocity)
+  
+  (define (update! time-delta)
+    (set! position (+ position (* speed time-delta)))
+    (set! speed (- speed (* gravity time-delta)))
+    (set! rotation (+ rotation (* time-delta angular-velocity))))
+  
+  (define (set-position! new-position)
+    (set! position new-position))
+  (define (set-speed! new-speed)
+    (set! speed new-speed))
+  (define (set-gravity! new-gravity)
+    (set! gravity new-gravity))
+  (define (set-rotation! new-rotation)
+    (set! rotation new-rotation))
+  (define (set-angular-velocity! new-angular-velocity)
+    (set! angular-velocity new-angular-velocity))
+  
+  (define (halt!)
+    (set! speed 0))
+  (define (float!)
+    (set! gravity 0))
+  (define (straighten!)
+    (set! rotation 0))
+  (define (stabilize!)
+    (set! angular-velocity 0))
+  
+  (dispatch (physics)
+    update!
+    position
+    speed
+    gravity
+    rotation
+    angular-velocity
+    set-position!
+    set-speed!
+    set-gravity!
+    set-rotation!
+    set-angular-velocity!
+    halt!
+    float!
+    stabilize!))
+
+;; Generating a menu
+
