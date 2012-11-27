@@ -119,6 +119,3 @@
     halt!
     float!
     stabilize!))
-
-;; Generating a menu
-

@@ -25,8 +25,8 @@
     (define* ; local variables
       [storage
        (cond
-         ((from-list) from-list)
-         ((from-vector) (vector->list from-vector))
+         (from-list from-list)
+         (from-vector (vector->list from-vector))
          (else '()))]
       [==? equality])
     

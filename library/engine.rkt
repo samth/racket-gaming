@@ -15,7 +15,7 @@
 (define loop%
   (class object%
     
-    (init-field callback interval)
+    (init-field interval [callback void])
     
     (declare loop) ; will contain the game loop 
     
@@ -44,18 +44,21 @@
     (define/public (set-interval! new-interval)
       (set! interval new-interval))))
 
+;; The global engine wrapper
 
-(define animation%
-  (class loop%
+(define engine%
+  (class object%
     
-    (inherit/super set-interval!)
+    (init [framerate 30])
     
-    (init on-frame)
-    (init-field [framerate 30])
+    (define (on-tick time-delta)
+      (display "Nothing to see here"))
     
-    (super-new [interval (/ 1000 framerate)]
-               [callback on-frame])
+    (define main-loop
+      (new loop%
+           [interval (/ 1000 framerate)]
+           [callback on-tick]))
+
+    (super-new)
     
-    (define/public (set-framerate! new-framerate)
-      (set! framerate new-framerate)
-      (set-interval! (/ 1000 new-framerate)))))
+    (send main-loop start)))

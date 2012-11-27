@@ -1,7 +1,7 @@
 #lang racket/base
 
-; Canvas backport of the graphics library
-; =======================================
+; Canvas backport of the game library
+; ===================================
 ;
 ; This file simulates the functionality of
 ; the first version of the graphics library.
@@ -9,11 +9,17 @@
 ; drawing images and providing more colors.
 
 (require "constants.rkt"
-         (rename-in "gaming.rkt" [make-color make-native-color]))
+         (rename-in "objective.rkt" [make-color make-native-color]))
 
 (provide make-image
          make-color
 
+         image-width
+         image-height
+         
+         get-canvas-width
+         get-canvas-height
+         
          black
          white
          red
@@ -29,23 +35,56 @@
 
          on-key!
          on-release!
+         off-key!
+         off-release!
 
          start-game-loop
          stop-game-loop
          (rename-out [current-milliseconds current-time]))
 
+;; Generating a lot of generics
+
+(define-generics*
+  (brush% set-color)
+  (game-canvas% get-width get-height update)
+  (graphics% set-pen set-brush set-text-foreground
+             only-pen only-brush clear
+             draw-bitmap draw-ellipse draw-rectangle draw-text draw-point draw-line))
+
 ;; General definitions
 
-(define graphics (make-graphics))
+(define game-loop 
+  (new loop%
+       [interval (/ 1000 CANVAS-FRAMERATE)]))
 
-(extract graphics
-  [the-keyboard keyboard]
-  [the-mouse mouse]
-  [the-animations animations])
+(define canvas
+  (new game-canvas%
+       [title CANVAS-TITLE]
+       [width CANVAS-WIDTH]
+       [height CANVAS-HEIGHT]))
+
+(extract canvas
+  [keyboard keyboard]
+  [mouse mouse]
+  [buffer buffer])
+
+(define graphics
+  (new graphics%
+       [bitmap buffer]))
+
+(define (get-canvas-width)
+  (send-generic canvas get-width))
+(define (get-canvas-height)
+  (send-generic canvas get-height))
+
+;; Transformation to cartesian coordinates
+
+(define (cartesian-y y)
+  (- (send-generic canvas get-height) y))
 
 ;; Colors and styles
 
-(define* 
+(define* ; used to draw text and shapes
   [font (make-font
           #:size FONT-SIZE
           #:face FONT-FACE
@@ -67,30 +106,25 @@
          [join PEN-JOIN]
          [stipple PEN-STIPPLE])])
 
-(define*
+(define* ; in order to detach the real pen or brush
   [some-brush (new brush%)]
   [some-pen (new pen%)])
-
-(struct color (native brush pen)) ; onthoud de brush en pen van een bepaalde kleur
 
 (define (make-color r g b [alpha 1.0])
   (make-object color% (* r 16) (* g 16) (* b 16) alpha))
 
-(define (use-brush! color) ; voor vormen die gevuld moeten worden
-  (set-brush graphics some-brush)
-  (send brush set-color color)
-  (use-brush graphics brush))
+(define (only-brush-color! color) ; voor vormen die gevuld moeten worden
+  (send-generic graphics set-brush some-brush)
+  (send-generic brush set-color color)
+  (send-generic graphics only-brush brush))
 
-(define (use-pen! color) ; voor vormen die enkel uit lijnen bestaan
-  (set-pen graphics some-pen)
-  (send pen set-color color)
-  (use-pen graphics pen))
+(define (only-pen-color! color) ; voor vormen die enkel uit lijnen bestaan
+  (send-generic graphics set-pen some-pen)
+  (send-generic pen set-color color)
+  (send-generic graphics only-pen pen))
 
-(define (use-font-color! color) ; alleen nodig voor tekst
-  (set-text-foreground graphics color))
-
-(set-font graphics font)
-(define current-char-height (get-char-height graphics))
+(send graphics set-font font)
+(define current-char-height (send graphics get-char-height))
 
 (define*
   [black (make-color 0 0 0)]
@@ -99,51 +133,60 @@
   [green (make-color 0 15 0)]
   [blue (make-color 0 0 15)])
 
-;; Images
+;; Drawing with images
 
 (define make-image (class-constructor bitmap%))
+(define image-width (class-method-accessor bitmap% 'get-width))
+(define image-height (class-method-accessor bitmap% 'get-height))
 
 (define (draw-image! x y image)
-  (use-document graphics (thunk (draw-bitmap graphics image x (- (get-height graphics) y)))))
+  (send-generic graphics draw-bitmap image x (- (cartesian-y y) (image-height image))))
 
 ;; Standard drawing operations
 
 (define (put-pixel! x y color)
-  (use-pen! color)
-  (draw-point graphics x y))
+  (only-pen-color! color)
+  (send-generic graphics draw-point x (cartesian-y y)))
 
 (define (draw-line! x1 y1 x2 y2 color)
-  (use-pen! color)
-  (draw-line graphics x1 y1 x2 y2))
+  (only-pen-color! color)
+  (send-generic graphics draw-line x1 (cartesian-y y1) x2 (cartesian-y y2)))
 
 (define (fill-rectangle! x y width height color)
-  (use-brush! color)
-  (draw-rectangle graphics x y width height))
+  (only-brush-color! color)
+  (send-generic graphics draw-rectangle x (cartesian-y y) width height))
 
 (define (fill-ellipse! x y width height color)
-  (use-brush! color)
-  (draw-ellipse graphics (- x (/ width 2)) (- y (/ height 2)) width height))
+  (only-brush-color! color)
+  (send-generic draw-ellipse graphics (- x (/ width 2)) (cartesian-y (- y (/ height 2))) width height))
 
 (define (draw-text! x y text color)
-  (use-font-color! color)
-  (use-document graphics (thunk (draw-text graphics text x (- (get-height graphics) y current-char-height)))))
+  (send-generic graphics set-text-foreground color)
+  (send-generic graphics draw-text text x (- (cartesian-y y) current-char-height)))
 
 ;; Event listening
 
 (define (on-key! code proc)
-  (chain the-keyboard (get-key code) press (add! proc)))
+  (chain keyboard (get-key code) press listeners (add! proc)))
 
 (define (on-release! code proc)
-  (chain the-keyboard (get-key code) release (add! proc)))
+  (chain keyboard (get-key code) release listeners (add! proc)))
+
+(define (off-key! code proc)
+  (chain keyboard (get-key code) press listeners (delete! proc)))
+
+(define (off-release! code proc)
+  (chain keyboard (get-key code) release listeners (delete! proc)))
 
 ;; Game looping and timekeeping
 
 (define (start-game-loop thunk [pass-time-delta? #f])
-  (chain* the-animations
-    ((add! (if pass-time-delta? thunk (lambda (delta) (thunk)))))
-    ((enable!))))
+  (set-field! callback game-loop
+              (lambda (delta)
+                (thunk delta)
+                (send-generic canvas update)
+                (send-generic graphics clear)))
+  (send game-loop start))
 
 (define (stop-game-loop)
-  (chain* the-animations
-    ((clear!))
-    ((disable!))))
+  (send game-loop stop))

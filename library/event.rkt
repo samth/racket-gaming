@@ -12,19 +12,22 @@
 
 (provide event-handler%)
 
+;; Performance optimization for collection
+
+(define-generics bag% for-all)
+
 ;; Generalization of an event handler
 
 (define event-handler%
   (class object%
     
     ; should the event be enabled upon initialization?
-    (init-field [enabled? #t])
+    (init-field [enabled? #t]
+                [listeners (new bag%)])
     
-    ; keep track of the listeners
-    (define*
-      [listeners '()]
-      [no-listeners '()]
-      [cache (if enabled? listeners no-listeners)])
+    ; caching the listeners to save an if-test
+    (define no-listeners (new bag%))
+    (define cache (if enabled? listeners no-listeners))
     
     (super-new)
     
@@ -34,22 +37,7 @@
     
     ; trigger the event with arguments that should be passed to the listeners 
     (define/public (trigger . args)
-      (for-each (lambda (listener) (apply listener args)) listeners))
-    
-    ; add a new listener to the current collection
-    (define/public (add! thunk)
-      (set! listeners (cons thunk listeners))
-      (update-cache))
-    
-    ; remove all the occurences of a specific listener
-    (define/public (remove! thunk)
-      (set! listeners (remove thunk listeners))
-      (update-cache))
-    
-    ; cleal the current listener collection
-    (define/public (clear!)
-      (set! listeners '())
-      (update-cache))
+      (send-generic cache for-all (lambda (listener) (apply listener args))))
     
     ; enable by setting the cache to the listeners collection
     (define/public (enable!)

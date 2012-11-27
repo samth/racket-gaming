@@ -12,22 +12,23 @@
 ; output (from a drawing container).
 
 (require "shared.rkt"
-         "event.rkt")
+         "keyboard.rkt"
+         "mouse.rkt")
 
+(provide game-canvas%)
 
 ; save method lookups for drawing
-(define-generics dc<%> draw-bitmap get-bitmap)
-(define-generics event-handler% trigger)
+(define-generics*
+  (dc<%> draw-bitmap)
+  (event-handler% trigger))
 
-;; Event handler for canvas events
+;; Using the screen display
 
-(define canvas-handler%
-  (class event-handler%
-    (field [paint (new event-handler%)]
-           [show (new event-handler%)]
-           [hide (new event-handler%)]
-           [resize (new event-handler%)])
-    (super-new)))
+(define (get-display-width)
+  (let-values ([(width height) (get-display-size)]) width))
+
+(define (get-display-height)
+  (let-values ([(width height) (get-display-size)]) height))
 
 ;; The object that glues it all together
 
@@ -43,22 +44,25 @@
           [title "Jaarproject (2012 - 2013)"]
           [shown? #t])
           
-    ; make the parent variable optional
-    (init-field
-     [parent
-      (new frame%
-           [label title]
-           [width width]
-           [height height]
-           [style '()])])
+    ; optional child objects of the canvas
+    (init-field [parent
+                 (new frame%
+                      [label title]
+                      [width width]
+                      [height height]
+                      [style '()])]
+                [mouse (new mouse%)]
+                [buffer (make-screen-bitmap (get-display-width) (get-display-height))]
+                [keyboard (new keyboard%)])
     
+    ; all sorts of canvas events
+    (field [paint (new event-handler%)]
+           [show (new event-handler%)]
+           [hide (new event-handler%)]
+           [resize (new event-handler%)])
+                   
     ; show or hide the screen
     (send parent show shown?)
-    
-    ; create new event handlers if none were provided
-    (init-field [events (new canvas-handler%)]
-                [mouse (new mouse%)]
-                [keyboard (new keyboard%)])
     
     ; save field lookups on mouse-events
     (extract mouse
@@ -79,22 +83,14 @@
     
     ; intialize the canvas with the optional window
     (super-new [parent parent])
-    
-    ; return the height of the canvas
-    (define/public (get-width)
-      (let-values ([(width height) (get-size)]) width))
-    
-    ; return only the width of the canas
-    (define/public (get-height)
-      (let-values ([(width height) (get-size)]) height))
-   
+      
     ; redefine the callback that runs when showing/hiding the canvas
     (define/override (on-superwindow-show shown?)
-      (send-generic (if shown? (chain events show) (chain events hide)) trigger))
+      (send-generic (if shown? show hide) trigger))
     
     ; redefine the callback that is executed upon resize
     (define/override (on-size width height)
-      (send-generic (chain events resize) trigger width height))
+      (send-generic resize trigger width height))
     
     ; redefine the callback that paints the canvas
     (define/override (on-paint)
@@ -126,8 +122,8 @@
     (define dc (get-dc))
     
     ; we won't be using racket's built-in buffer
-    ;(send canvas suspend-flush)
+    ;(send canvas suspend-flush) ; WRONG: we must
     
-    ; push the content of a graphics object to the screen
-    (define (output-gaphics graphics)
-      (send-generic dc draw-bitmap (get-field graphics buffer) 0 0))))
+    ; push the content of the buffer to the screen
+    (define/public (update)
+      (send-generic dc draw-bitmap buffer 0 0))))
