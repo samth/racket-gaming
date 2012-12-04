@@ -1,3 +1,4 @@
+#lang r5rs
 (#%require "../canvas.rkt")
 (#%require (only racket/base error)) ;for error
 
