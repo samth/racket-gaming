@@ -2,18 +2,11 @@
 
 (require "shared.rkt")
 
-;; Tweedimensionele vectoren
-
-(define*
-  [2d make-rectangular]
-  [x real-part]
-  [y imag-part])
-
 ;; Canvas aanmaken
 
-(define example (make-graphics 500 500))
+(define graphics (make-graphics 500 500))
 
-(extract example ; zo moeten we niet altijd (chain example ...) gebruiken
+(extract graphics ; zo moeten we niet altijd (chain graphics ...) gebruiken
   [the-keyboard keyboard]
   [the-mouse mouse]
   [the-animations animations])
@@ -62,10 +55,10 @@
   (lambda (delta)
     (set! rotation (+ rotation (* delta speed)))
     (use-rotation
-     example
+     graphics
      (thunk
-      (set-brush/pen example brush pen)
-      (draw-rectangle example (- (/ (x size) 2)) (-  (/ (y size) 2)) (x size) (y size)))
+      (set-brush/pen graphics brush pen)
+      (draw-rectangle graphics (- (/ (x size) 2)) (-  (/ (y size) 2)) (x size) (y size)))
      rotation
      (x position)
      (y position))))
@@ -88,8 +81,8 @@
       (set! direction (- direction)))
     (set! size (+ size direction)))
   (define (draw!)
-    (set-brush/pen example brush pen)
-    (draw-ellipse example (- (/ size 2)) (- (/ size 2)) size size))
+    (set-brush/pen graphics brush pen)
+    (draw-ellipse graphics (- (/ size 2)) (- (/ size 2)) size size))
   (lambda (msg . args)
     (case msg
       ((move!) (apply move! args))
@@ -113,10 +106,11 @@
 
 (chain start-event (add! (thunk (chain the-animations (start)))))
 
-(use-brush example full-black)
-(draw-rectangle example 0 0 500 500)
+(use-brush graphics full-black)
+(draw-rectangle graphics 0 0 500 500)
 
-(set-text-foreground example "white")
-(draw-text example "Press space to start the animations!" 100 200)
+(set-text-foreground graphics "white")
+(draw-text graphics "Press space to start the animations!" 100 200)
 
-(update-graphics example)
+(chain the-animations (add! (lambda (delta) (clear graphics))))
+(update-graphics graphics)

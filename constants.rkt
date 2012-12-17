@@ -13,6 +13,7 @@
 (define CANVAS-WIDTH 800)
 (define CANVAS-HEIGHT 600)
 (define CANVAS-SHOWN #t)
+(define CANVAS-FRAMERATE 30)
 
 ;
 ; De penseel die moet gebruikt worden in de backport van de graphics
