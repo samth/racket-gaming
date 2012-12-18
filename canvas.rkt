@@ -21,6 +21,7 @@
          get-canvas-width
          get-canvas-height
          
+         find-color
          black
          white
          red
@@ -116,6 +117,9 @@
 
 (define (make-color r g b [alpha 1.0])
   (make-object color% (* r 16) (* g 16) (* b 16) alpha))
+
+(define (find-color name)
+  (send the-color-database find-color name))
 
 (define (only-brush-color! color) ; voor vormen die gevuld moeten worden
   (send-generic graphics set-brush some-brush)
