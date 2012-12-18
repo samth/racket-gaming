@@ -45,11 +45,14 @@
 
 ;; Generating a lot of generics
 
+(define*
+  [set-brush-color (generic brush% set-color)]
+  [set-pen-color (generic pen% set-color)])
+
 (define-generics*
-  (brush% set-color)
   (game-canvas% get-width get-height update)
   (graphics% set-pen set-brush set-font set-text-foreground
-             only-pen only-brush clear
+             only-pen only-brush clear get-char-height
              draw-bitmap draw-ellipse draw-rectangle draw-text draw-point draw-line))
 
 ;; General definitions
@@ -95,12 +98,12 @@
           #:underlined? FONT-UNDERLINED
           #:smoothing FONT-SMOOTHING
           #:size-in-pixels? FONT-SIZE-IN-PIXELS)]
-  [brush (new brush%
+  [my-brush (new brush%
            [style BRUSH-STYLE]
            [stipple BRUSH-STIPPLE]
            [gradient BRUSH-GRADIENT]
            [transformation BRUSH-TRANSFORMATION])]
-  [pen (new pen%
+  [my-pen (new pen%
          [width PEN-WIDTH]
          [style PEN-STYLE]
          [cap PEN-CAP]
@@ -116,15 +119,13 @@
 
 (define (only-brush-color! color) ; voor vormen die gevuld moeten worden
   (send-generic graphics set-brush some-brush)
-  (send-generic brush set-color color)
-  (send-generic graphics only-brush brush))
+  (send-generic my-brush set-brush-color color)
+  (send-generic graphics only-brush my-brush))
 
 (define (only-pen-color! color) ; voor vormen die enkel uit lijnen bestaan
   (send-generic graphics set-pen some-pen)
-  (send-generic pen set-color color)
-  (send-generic graphics only-pen pen))
-
-(define current-char-height (send graphics get-char-height))
+  (send-generic my-pen set-pen-color color)
+  (send-generic graphics only-pen my-pen))
 
 (define*
   [black (make-color 0 0 0)]
@@ -154,18 +155,22 @@
 
 (define (fill-rectangle! x y width height color)
   (only-brush-color! color)
-  (send-generic graphics draw-rectangle x (cartesian-y y) width height))
+  (send-generic graphics draw-rectangle x (- (cartesian-y y) height) width height))
 
 (define (fill-ellipse! x y width height color)
   (only-brush-color! color)
-  (send-generic draw-ellipse graphics (- x (/ width 2)) (cartesian-y (- y (/ height 2))) width height))
+  (send-generic graphics draw-ellipse
+                (- x (/ width 2))
+                (- (cartesian-y y) (/ height 2)) width height))
 
 (define (draw-text! x y text color [font my-font])
   (send-generic graphics set-text-foreground color)
   (send-generic graphics set-font font)
-  (send-generic graphics draw-text text x (- (cartesian-y y) current-char-height)))
+  (send-generic graphics draw-text text x
+                (- (cartesian-y y)
+                   (send-generic graphics get-char-height))))
 
-;; Event listening
+;; Keyboard event listening
 
 (define (on-key! code proc)
   (chain keyboard (get-key code) press listeners (add! proc)))
@@ -178,6 +183,9 @@
 
 (define (off-release! code proc)
   (chain keyboard (get-key code) release listeners (delete! proc)))
+
+;; Mouse even listening
+
 
 ;; Game looping and timekeeping
 
@@ -196,3 +204,9 @@
 
 (define (stop-game-loop)
   (send game-loop stop))
+
+;; Testing
+
+(define (test-draw proc . args)
+  (apply proc args)
+  (send-generic canvas update))
