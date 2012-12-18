@@ -193,17 +193,19 @@
 
 ;; Game looping and timekeeping
 
+(define (post-process)
+  (send-generic canvas update)
+  (send-generic graphics clear))
+
 (define (start-game-loop thunk [pass-time-delta? #f])
   (set-field! callback game-loop
               (if pass-time-delta?
                   (lambda (delta)
                     (thunk delta)
-                    (send-generic canvas update)
-                    (send-generic graphics clear))
+                    (post-process))
                   (lambda (delta)
                     (thunk)
-                    (send-generic canvas update)
-                    (send-generic graphics clear))))
+                    (post-process))))
   (send game-loop start))
 
 (define (stop-game-loop)
