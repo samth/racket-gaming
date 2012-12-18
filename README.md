@@ -15,8 +15,9 @@ games with the native racket/gui library more convenient.
 
 ## Usage ##
 
-There are two choices: `graphics.rkt` includes the full library while
-`canvas.rkt` imports the simplified library (recommended for beginners).
+There are multiple choices, depending on your programming style: `canvas.rkt` imports the simplified library
+(recommended for beginners) while `objective.rkt` includes the full object-oriented library. You can also use
+`procedural.rkt`, which provides only procedural bindings (experimental).
 
 Please read the [wikipages](http://github.com/samvv/racket-gaming/wiki)
 for more information on how to use this library.
