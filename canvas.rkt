@@ -13,6 +13,7 @@
 
 (provide make-image
          make-color
+         make-font
 
          image-width
          image-height
@@ -37,7 +38,7 @@
          on-release!
          off-key!
          off-release!
-
+        
          start-game-loop
          stop-game-loop
          (rename-out [current-milliseconds current-time]))
@@ -47,7 +48,7 @@
 (define-generics*
   (brush% set-color)
   (game-canvas% get-width get-height update)
-  (graphics% set-pen set-brush set-text-foreground
+  (graphics% set-pen set-brush set-font set-text-foreground
              only-pen only-brush clear
              draw-bitmap draw-ellipse draw-rectangle draw-text draw-point draw-line))
 
@@ -85,7 +86,7 @@
 ;; Colors and styles
 
 (define* ; used to draw text and shapes
-  [font (make-font
+  [my-font (make-font
           #:size FONT-SIZE
           #:face FONT-FACE
           #:family FONT-FAMILY
@@ -123,7 +124,6 @@
   (send-generic pen set-color color)
   (send-generic graphics only-pen pen))
 
-(send graphics set-font font)
 (define current-char-height (send graphics get-char-height))
 
 (define*
@@ -160,8 +160,9 @@
   (only-brush-color! color)
   (send-generic draw-ellipse graphics (- x (/ width 2)) (cartesian-y (- y (/ height 2))) width height))
 
-(define (draw-text! x y text color)
+(define (draw-text! x y text color [font my-font])
   (send-generic graphics set-text-foreground color)
+  (send-generic graphics set-font font)
   (send-generic graphics draw-text text x (- (cartesian-y y) current-char-height)))
 
 ;; Event listening
@@ -182,10 +183,15 @@
 
 (define (start-game-loop thunk [pass-time-delta? #f])
   (set-field! callback game-loop
-              (lambda (delta)
-                (thunk delta)
-                (send-generic canvas update)
-                (send-generic graphics clear)))
+              (if pass-time-delta?
+                  (lambda (delta)
+                    (thunk delta)
+                    (send-generic canvas update)
+                    (send-generic graphics clear))
+                  (lambda (delta)
+                    (thunk)
+                    (send-generic canvas update)
+                    (send-generic graphics clear))))
   (send game-loop start))
 
 (define (stop-game-loop)
