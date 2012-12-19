@@ -35,10 +35,20 @@
          fill-rectangle!
          fill-ellipse!
 
+         on-close!
+         on-resize!
+         off-close!
+         off-resize!
+         
          on-key!
          on-release!
          off-key!
          off-release!
+         
+         on-click!
+         on-move!
+         off-click!
+         off-move!
         
          start-game-loop
          stop-game-loop
@@ -174,6 +184,20 @@
                 (- (cartesian-y y)
                    (send-generic graphics get-char-height))))
 
+;; Canvas meta events
+
+(define (on-close! proc)
+  (chain canvas hide listeners (add! proc)))
+
+(define (on-resize! proc)
+  (chain canvas resize (add! proc)))
+
+(define (off-close! proc)
+  (chain canvas close (delete! proc)))
+
+(define (off-resize! proc)
+  (chain canvas resize (delete! proc)))
+
 ;; Keyboard event listening
 
 (define (on-key! code proc)
@@ -188,8 +212,13 @@
 (define (off-release! code proc)
   (chain keyboard (get-key code) release listeners (delete! proc)))
 
-;; Mouse even listening
+;; Mouse event listening
 
+(define (on-click! proc)
+  (chain mouse left press listeners (add! proc)))
+
+(define (on-move! proc)
+  (chain mouse move listeners (add! proc)))
 
 ;; Game looping and timekeeping
 
@@ -211,8 +240,7 @@
 (define (stop-game-loop)
   (send game-loop stop))
 
-;; Testing
+;; Finishing touch
 
-(define (test-draw proc . args)
-  (apply proc args)
-  (send-generic canvas update))
+(send canvas focus) ; give immediate focus to the window
+(on-close! stop-game-loop) ; disable the gameloop when closed
