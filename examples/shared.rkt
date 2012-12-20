@@ -1,8 +1,11 @@
 #lang racket/base
 
-(require "../gaming.rkt")
+(require "../objective.rkt"
+         "../procedural.rkt")
 
-(provide (all-from-out "../gaming.rkt")
+(provide (all-from-out
+          "../objective.rkt"
+          "../procedural.rkt")
          
          console
          

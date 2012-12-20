@@ -220,6 +220,12 @@
 (define (on-move! proc)
   (chain mouse move listeners (add! proc)))
 
+(define (off-click! proc)
+  (chain mouse left press listeners (delete! proc)))
+
+(define (off-move! proc)
+  (chain mouse move listeners (delete! proc)))
+
 ;; Game looping and timekeeping
 
 (define (post-process)

@@ -13,7 +13,8 @@
 ; +/- 20% when using these procedures.
 
 (require (for-syntax (only-in racket/provide-transform make-provide-pre-transformer))
-         "game.rkt" racket/class)
+         "objective.rkt"
+         racket/class)
 
 ;; Syntax transfomers for generating class operators
 
