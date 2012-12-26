@@ -109,14 +109,16 @@
     
     ; process the input of the mouse
     (define/override (on-event event) ; http://docs.racket-lang.org/gui/mouse-event_.html
-      (case (send-generic event get-event-type)
-        ((motion) (send-generic motion trigger (send-generic event get-x) (send-generic event get-y)))
-        ((left-down) (send-generic left-down trigger))
-        ((left-up) (send-generic left-up trigger))
-        ((middle-down) (send-generic middle-down trigger))
-        ((middle-up) (send-generic middle-up trigger))
-        ((right-up) (send-generic right-up trigger))
-        ((right-down) (send-generic right-down trigger))))
+      (let ((x  (send-generic event get-x))
+            (y (send-generic event get-y)))
+        (case (send-generic event get-event-type)
+          ((motion) (send-generic motion trigger x y))
+          ((left-down) (send-generic left-down trigger x y))
+          ((left-up) (send-generic left-up trigger x y))
+          ((middle-down) (send-generic middle-down trigger x y))
+          ((middle-up) (send-generic middle-up trigger x y))
+          ((right-up) (send-generic right-up trigger x y))
+          ((right-down) (send-generic right-down trigger x y)))))
     
     ; get the drawing container of this canvas
     (define dc (get-dc))

@@ -7,7 +7,9 @@
 ; special forms in this file wherever possible. That
 ; way they can easily be consulted and/or augmented.
 
-(require racket/class)
+(require racket/class
+         (for-syntax racket/base
+                     (only-in racket/provide-transform make-provide-pre-transformer)))
 
 (provide define*
          declare
@@ -18,7 +20,9 @@
          extract
          class-constructor
          class-method-accessor
-         class-predicate)
+         class-predicate
+         class-out
+         console)
 
 ;; Meta syntax forms
 
@@ -35,6 +39,8 @@
 ; to reserve a mutable variable
 (define-syntax-rule (declare var ...)
   (begin (define var (void)) ...))
+
+;; Class and object helpers
 
 ; to define multiple generics of a class
 (define-syntax-rule
@@ -75,3 +81,31 @@
   (if (class? class)
       (lambda (object) (is-a? object class))
       (error 'class-predicate "~a is not a class" class)))
+
+; converting classes to procedures
+(define-syntax class-out
+  (make-provide-pre-transformer
+    (lambda (stx modes)
+      (syntax-case stx ()
+        [(_ (class-name constructor-name ...)
+            method-name ...)
+         (and (identifier? #'class-name)
+              (andmap identifier? (syntax-e #'(constructor-name ... method-name ...))))
+         #`(rename-out #,@(map (lambda (constructor-id) ; create new constructors on-the-fly
+                                 #`[#,(syntax-local-lift-expression
+                                       #'(class-constructor class-name))
+                                    #,constructor-id])
+                               (syntax-e #'(constructor-name ...)))
+                       #,@(values
+                           (map (lambda (method-id) ; create new method accessors on-the-fly
+                                  #`[#,(syntax-local-lift-expression
+                                        #`(class-method-accessor class-name '#,method-id))
+                                     #,method-id])
+                                (syntax-e #'(method-name ...)))))]))))
+
+;; Console feedback
+
+; displaying usefull information in the console
+(define (console str . args)
+  (display (apply format str args))
+  (newline))

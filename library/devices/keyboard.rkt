@@ -11,9 +11,14 @@
 ; can handle it.
 
 (require racket/vector
+         racket/file
+         racket/runtime-path
          "shared.rkt")
 
 (provide keyboard%)
+
+(define-runtime-path special-codes-file "special-keys")
+(define special-codes (list->vector (map string->symbol (file->lines special-codes-file))))
 
 (define key%
   (class push-button%
@@ -34,7 +39,7 @@
     (define special-keys
       (vector-map (lambda (code)
                     (make-object key% code))
-                  SPECIAL-KEYS))
+                  special-codes))
     
     (super-new)
     
@@ -44,7 +49,7 @@
         ((char? code)
          (vector-ref char-keys (- (char->integer code) UTF8-RANGE-START)))
         ((symbol? code) 
-         (let ((index (vector-member code SPECIAL-KEYS)))
+         (let ((index (vector-member code special-codes)))
            (if index
                (vector-ref special-keys index)
                (error 'get-key "the key ~a could not be found (no such symbol)" code))))

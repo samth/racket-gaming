@@ -2,19 +2,16 @@
 
 ; Canvas backport of the game library
 ; ===================================
-;
-; This file simulates the functionality of
-; the first version of the graphics library.
-; Above that, it adds some extra features, such as
-; drawing images and providing more colors.
 
 (require "constants.rkt"
          (rename-in "objective.rkt" [make-color make-native-color]))
 
-(provide make-image
+(provide canvas
+         
+         make-image
          make-color
          make-font
-
+         
          image-width
          image-height
          
@@ -27,14 +24,14 @@
          red
          green
          blue
-
+         
          put-pixel!
          draw-line!
          draw-image!
          draw-text!
          fill-rectangle!
          fill-ellipse!
-
+         
          on-close!
          on-resize!
          off-close!
@@ -49,7 +46,7 @@
          on-move!
          off-click!
          off-move!
-        
+         
          start-game-loop
          stop-game-loop
          (rename-out [current-milliseconds current-time]))
@@ -79,9 +76,9 @@
        [height CANVAS-HEIGHT]))
 
 (extract canvas
-  [keyboard keyboard]
-  [mouse mouse]
-  [buffer buffer])
+         [keyboard keyboard]
+         [mouse mouse]
+         [buffer buffer])
 
 (define graphics
   (new graphics%
@@ -101,25 +98,25 @@
 
 (define* ; used to draw text and shapes
   [my-font (make-font
-          #:size FONT-SIZE
-          #:face FONT-FACE
-          #:family FONT-FAMILY
-          #:style FONT-STYLE
-          #:weight FONT-WEIGHT
-          #:underlined? FONT-UNDERLINED
-          #:smoothing FONT-SMOOTHING
-          #:size-in-pixels? FONT-SIZE-IN-PIXELS)]
+             #:size FONT-SIZE
+             #:face FONT-FACE
+             #:family FONT-FAMILY
+             #:style FONT-STYLE
+             #:weight FONT-WEIGHT
+             #:underlined? FONT-UNDERLINED
+             #:smoothing FONT-SMOOTHING
+             #:size-in-pixels? FONT-SIZE-IN-PIXELS)]
   [my-brush (new brush%
-           [style BRUSH-STYLE]
-           [stipple BRUSH-STIPPLE]
-           [gradient BRUSH-GRADIENT]
-           [transformation BRUSH-TRANSFORMATION])]
+                 [style BRUSH-STYLE]
+                 [stipple BRUSH-STIPPLE]
+                 [gradient BRUSH-GRADIENT]
+                 [transformation BRUSH-TRANSFORMATION])]
   [my-pen (new pen%
-         [width PEN-WIDTH]
-         [style PEN-STYLE]
-         [cap PEN-CAP]
-         [join PEN-JOIN]
-         [stipple PEN-STIPPLE])])
+               [width PEN-WIDTH]
+               [style PEN-STYLE]
+               [cap PEN-CAP]
+               [join PEN-JOIN]
+               [stipple PEN-STIPPLE])])
 
 (define* ; in order to detach the real pen or brush
   [some-brush (new brush%)]
@@ -150,9 +147,30 @@
 
 ;; Drawing with images
 
-(define make-image (class-constructor bitmap%))
-(define image-width (class-method-accessor bitmap% 'get-width))
-(define image-height (class-method-accessor bitmap% 'get-height))
+(define (make-image path [width #f] [height #f])
+  (let ((image
+         (read-bitmap
+          (if (file-exists? path)
+              path
+              (begin
+                (console "The image in \"~a\" could not be loaded: file not found" path)
+                "unknown.png"))
+          (if (bytes=? (filename-extension path) #"gif")
+              'gif/alpha
+              'unknown/alpha))))
+    (let ((real-width (or width (image-width image)))
+          (real-height (or height (image-height image))))
+      (let*
+          ((scaled-image (make-bitmap real-width real-height))
+           (dc (send scaled-image make-dc)))
+        (send* dc
+          (set-scale (/ real-width (image-width image))
+                     (/ real-height (image-height image)))
+          (draw-bitmap image 0 0))
+        scaled-image))))
+
+(define (image-width image) (send image get-width))
+(define (image-height image) (send image get-height))
 
 (define (draw-image! x y image)
   (send-generic graphics draw-bitmap image x (- (cartesian-y y) (image-height image))))
@@ -190,13 +208,13 @@
   (chain canvas hide listeners (add! proc)))
 
 (define (on-resize! proc)
-  (chain canvas resize (add! proc)))
+  (chain canvas resize listeners (add! proc)))
 
 (define (off-close! proc)
-  (chain canvas close (delete! proc)))
+  (chain canvas close listeners (delete! proc)))
 
 (define (off-resize! proc)
-  (chain canvas resize (delete! proc)))
+  (chain canvas resize listeners (delete! proc)))
 
 ;; Keyboard event listening
 
@@ -250,3 +268,5 @@
 
 (send canvas focus) ; give immediate focus to the window
 (on-close! stop-game-loop) ; disable the gameloop when closed
+
+(console "Canvas library v~a initialized" VERSION)

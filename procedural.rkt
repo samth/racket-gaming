@@ -2,43 +2,9 @@
 
 ; Procedural Library Wrapper
 ; ==========================
-;
-; This wrapper has been built for those who prefer
-; procedural operators above the racket class
-; system.
-;
-; The procedural wrapper will be slightly slower
-; than the normal object system: tests show that
-; the time of a method call itself increases with
-; +/- 20% when using these procedures.
 
-(require (for-syntax (only-in racket/provide-transform make-provide-pre-transformer))
-         "objective.rkt"
-         racket/class)
-
-;; Syntax transfomers for generating class operators
-
-(define-syntax class-out
-  (make-provide-pre-transformer
-    (lambda (stx modes)
-      (syntax-case stx ()
-        [(_ (class-name constructor-name ...)
-            method-name ...)
-         (and (identifier? #'class-name)
-              (andmap identifier? (syntax-e #'(constructor-name ... method-name ...))))
-         #`(rename-out #,@(map (lambda (constructor-id) ; create new constructors on-the-fly
-                                 #`[#,(syntax-local-lift-expression
-                                       #'(class-constructor class-name))
-                                    #,constructor-id])
-                               (syntax-e #'(constructor-name ...)))
-                       #,@(values
-                           (map (lambda (method-id) ; create new method accessors on-the-fly
-                                  #`[#,(syntax-local-lift-expression
-                                        #`(class-method-accessor class-name '#,method-id))
-                                     #,method-id])
-                                (syntax-e #'(method-name ...)))))]))))
-
-;; Full list of classes and their operators
+(require "objective.rkt"
+         "constants.rkt")
 
 (provide (rename-out
           (class-out (graphics% make-graphics)
@@ -184,3 +150,5 @@
                     transform
                     translate
                     try-color))
+
+(console "Racket game library v~a loaded" VERSION)
