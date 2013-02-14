@@ -155,9 +155,11 @@
               (begin
                 (console "The image in \"~a\" could not be loaded: file not found" path)
                 "unknown.png"))
-          (if (bytes=? (filename-extension path) #"gif")
-              'gif/alpha
-              'unknown/alpha))))
+          (cond
+            ((bytes=? (filename-extension path) #"gif") 'gif/alpha)
+            ((bytes=? (filename-extension path) #"png") 'png/alpha)
+            (else
+              'unknown/alpha)))))
     (let ((real-width (or width (image-width image)))
           (real-height (or height (image-height image))))
       (let*
