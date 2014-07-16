@@ -5,6 +5,10 @@ Simple Racket Game Library
 This is a small library written in racket that aims to make developing
 games with the native racket/gui library more convenient.
 
+## Annoucement
+
+Since the recent interest in this project, I would like to add that this is stil a work in progress. The primary focus for now is the [physics engine](https://github.com/samvv/racket-physics). Any help is always appreciated!
+
 ## Features ##
 
  - Fully event-driven mouse and keyboard
