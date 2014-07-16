@@ -44,9 +44,3 @@ has been provided in *canvas.rkt*. Use *graphics/canvas.rkt*  in
 order to use racket-gaming as a back-en instead of the old library.
  
 The libraries that have been of use are stored in the folder *references*.
-
-## Disclaimer ##
-
-The code may freely be modified/redistributed. A small notification would be great.
-
-**Using this code is entirely at your own risk!**
