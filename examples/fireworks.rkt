@@ -9,7 +9,7 @@
 ; This is a re-implementation of an old example 
 ; back from 2011 with this new library.
 
-(require "shared.rkt")
+(require gaming/legacy/canvas)
 
 ;; Instellingen
 

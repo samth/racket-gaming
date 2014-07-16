@@ -3,3 +3,4 @@ tags
 *~
 compiled
 .DS_Store
+constants.rkt
