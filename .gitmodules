@@ -1,6 +1,0 @@
-[submodule "library/physics"]
-	path = library/physics
-	url = https://github.com/samvv/racket-physics.git
-[submodule "gaming/physics"]
-	path = gaming/physics
-	url = https://github.com/samvv/racket-physics
