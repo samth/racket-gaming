@@ -1,5 +1,5 @@
 #lang info
-(define name "pixel")
+(define collection 'multi)
+(define version "0.2.0")
+(define deps '(("ramunk" "1.0.0") ("rx" "0.1.0")))
 (define categories '(2d game graphics))
-(define collection "pixel")
-
