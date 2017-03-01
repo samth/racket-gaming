@@ -4,3 +4,7 @@ tags
 compiled
 .DS_Store
 constants.rkt
+
+/doc/*.html
+/doc/*.css
+/doc/*.js
