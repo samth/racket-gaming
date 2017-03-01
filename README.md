@@ -1,6 +1,8 @@
 Simple Racket Game Library
 ==========================
 
+[![Build Status](https://travis-ci.org/samvv/racket-gaming.svg?branch=master)](https://travis-ci.org/samvv/racket-gaming)
+
 This is a small library written in [Racket](https://racket-lang.org) that aims to make developing
 games within Racket more convenient.
 
