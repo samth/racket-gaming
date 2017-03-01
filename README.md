@@ -16,6 +16,10 @@ This library has been extensively refactored with new functionality, while old
 functionality has been removed. To learn more, read the [change
 log](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md).
 
+**Latest screenshot**
+
+![Example](http://i65.tinypic.com/33cao44.gif)
+
 ## Features ##
 
  - Fully integrated high-performance physics engine
@@ -38,6 +42,13 @@ If you have problems feel free to open an issue.
 **Hint:** if you're upgrading, make sure you read the
 [changelog](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md)
 before doing so!
+
+## Platform Limitations
+
+Currently, only macOS sierry is supported. This is due to the fact that the
+[phyics engine](https://github.com/samvv/ramunk)
+does not contain any releases yet for other platforms. This will get fixed in
+the next couple of weeks, however.
 
 ## Usage
 
