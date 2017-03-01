@@ -6,18 +6,19 @@ games within Racket more convenient.
 
 This library is excellent for students just starting out with Racket and
 programming in general, while it might also be useful to more experienced
-programmers who want to quickly prototype a game. The
+programmers who want to quickly prototype a 2D game. The
 [issues](https://github.com/samvv/racket-gaming/labels/question) can be used if
 you run into any problems.
 
 ## Breaking Changes
 
-This library will be refactored in the upcoming days or weeks. To learn more, read the
-[change log](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md).
+This library has been extensively refactored with new functionality, while old
+functionality has been removed. To learn more, read the [change
+log](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md).
 
 ## Features ##
 
- - Fully integrated physics engine
+ - Fully integrated high-performance physics engine
  - Buffered frames preventing flicker
 
 More to come soon!
