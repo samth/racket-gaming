@@ -30,7 +30,7 @@
 (define balls
   (build-list init-ball-count (lambda (i) (new ball% [position (random-position)]))))
 
-(define sw (send the-screen get-width))
+(define sw (- (send the-screen get-width) ball-radius))
 (define sh (- (send the-screen get-height) (* 2 ball-radius)))
 
 (define top 
@@ -58,8 +58,8 @@
   (new segment%
        [friction 1.0]
        [elasticity 1.0]
-       [a (make-point 0 0)]
-       [b (make-point 0 sh)]))
+       [a (make-point (- ball-radius) 0)]
+       [b (make-point (- ball-radius) sh)]))
 
 (send the-world add-shapes bottom top right left)
 
