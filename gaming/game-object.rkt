@@ -33,6 +33,7 @@
 
     (init [position (make-point 0 0)]
           [velocity (make-point 0 0)]
+          [angle 0.0]
           [mass 1.0]
           [shape #f]
           [shapes '()]
@@ -41,6 +42,7 @@
     (init-field [cp-body (if controlled? (cpBodyNewKinematic) (cpBodyNew mass moment))])
     (cpBodySetPosition cp-body (send position to-cpv))
     (cpBodySetVelocity cp-body (send velocity to-cpv))
+    (cpBodySetAngle cp-body (exact->inexact angle))
 
     (send world add-object this)
 
@@ -53,6 +55,9 @@
       (add-shape shape))
 
     (super-new)
+
+    (define/public (get-angle)
+      (cpBodyGetAngle cp-body))
 
     (define/public (get-x)
       (cpVect-x (cpBodyGetPosition cp-body)))
