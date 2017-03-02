@@ -20,7 +20,7 @@ log](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md).
 
 **Latest screenshot**
 
-![Example](http://i65.tinypic.com/33cao44.gif)
+![Example]()
 
 ## Features ##
 
@@ -53,6 +53,8 @@ does not contain any releases yet for other platforms. This will get fixed in
 the next couple of weeks, however.
 
 ## Usage
+
+The following demonstrates how to set up a world, a screen and some game objects.
 
 ```racket
 #lang racket
