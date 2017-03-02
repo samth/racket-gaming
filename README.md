@@ -18,10 +18,6 @@ This library has been extensively refactored with new functionality, while old
 functionality has been removed. To learn more, read the [change
 log](https://github.com/samvv/racket-gaming/tree/master/CHANGELOG.md).
 
-**Latest screenshot**
-
-![Example]()
-
 ## Features ##
 
  - Fully integrated high-performance physics engine
