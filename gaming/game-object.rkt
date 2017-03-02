@@ -37,7 +37,7 @@
           [mass 1.0]
           [shape #f]
           [shapes '()]
-          [moment 0.4])
+          [moment 100.0])
 
     (init-field [cp-body (if controlled? (cpBodyNewKinematic) (cpBodyNew mass moment))])
     (cpBodySetPosition cp-body (send position to-cpv))
@@ -46,8 +46,8 @@
 
     (send world add-object this)
 
-    (field [cp-position (make-object position-point% this)]
-           [cp-velocity (make-object velocity-point% this)])
+    (field [cp-position (make-object position-point% cp-body)]
+           [cp-velocity (make-object velocity-point% cp-body)])
 
     (define shape-hash (make-hash))
 
@@ -86,6 +86,9 @@
 
     (define/public (get-cp-body)
       cp-body)
+    
+    (define/public (get-world)
+      world)
 
     ))
 

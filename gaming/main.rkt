@@ -1,6 +1,8 @@
 #lang racket
 
 (require 2htdp/image
+         "helpers.rkt"
+         "timing.rkt"
          "world.rkt"
          "screen.rkt"
          "game-object.rkt"
@@ -10,6 +12,8 @@
 
 (provide (all-from-out
            2htdp/image
+           "helpers.rkt"
+           "timing.rkt"
            "world.rkt"
            "screen.rkt"
            "game-object.rkt"

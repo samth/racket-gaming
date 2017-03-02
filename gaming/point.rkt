@@ -4,7 +4,8 @@
 
 (provide point%
          cp-property-point%
-         make-point)
+         make-point
+         angle->point)
 
 (define cp-property-point% 
   (class object%
@@ -18,6 +19,15 @@
       (cpVect-x (get-cpv)))
     (define/public (get-y) 
       (cpVect-y (get-cpv)))
+
+    (define/public (set-x new-x)
+      (define cp-v (get-cpv))
+      (set-cpVect-x! cp-v (exact->inexact new-x))
+      (set-cpv cp-v))
+    (define/public (set-y new-y)
+      (define cp-v (get-cpv))
+      (set-cpVect-y! cp-v (exact->inexact new-y))
+      (set-cpv cp-v))
 
     (define/public (add oth)
       (define cp-v (get-cpv))
@@ -82,6 +92,9 @@
     ;(define/public (scale factor)
       ;(send del scale factor))
     ;))
+
+(define (angle->point a)
+  (make-point (cos a) (sin a)))
 
 (define (make-point x y)
   (make-object point% x y))

@@ -3,7 +3,10 @@
 (require (only-in racket/gui timer% yield)
          "syntax.rkt")
 
-(provide game-loop%)
+(provide game-loop%
+         after)
+
+(define job<%> 'todo)
 
 (define job%
   (class object%
@@ -53,4 +56,9 @@
       (make-object job% this callback))
 
     ))
+
+(define (after msec callback)
+  (new timer% [notify-callback callback] [interval msec])
+  ; TODO: allow cancellation of event
+  )
 

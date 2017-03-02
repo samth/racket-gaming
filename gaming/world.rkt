@@ -15,6 +15,7 @@
   (class object%
 
     (init-field screen 
+                [background "white"]
                 [game-loop (new game-loop%)]
                 [gravity (make-point 0 9.81)])
   
@@ -33,13 +34,19 @@
     (define/public (render)
       (define dc (send screen get-dc))
       (send dc suspend-flush)
+      (if (string? background)
+        (send dc set-background background)
+        (render-image background dc 0 0))
       (send dc clear)
       (for ([object objects])
-        (render-image
-          (send object render)
-          dc
-          (send object get-x) 
-          (send object get-y)))
+        (define image (send object render))
+        (define w (image-width image))
+        (define h (image-height image))
+        (define old-transform (send dc get-transformation))
+        (send dc set-origin (+ (send object get-x) (/ w 2)) (+ (send object get-y) (/ h 2)))
+        (send dc set-rotation (send object get-angle))
+        (render-image image dc (- (/ w 2)) (- (/ h 2)))
+        (send dc set-transformation old-transform))
       (send dc resume-flush))
 
     (define/public (get-cp-space)

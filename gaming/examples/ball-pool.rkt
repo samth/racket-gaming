@@ -21,10 +21,11 @@
   (class game-object%
     (super-new 
       [world the-world]
-      [image (circle ball-radius "solid" "red")]
+      [image (bitmap/sized (* ball-radius 2) (* ball-radius 2) gaming/examples/assets/football.png)]
+      ;[image (rectangle 10 20 "solid" "red")]
       [shape (new circle% 
                   [radius ball-radius]
-                  [friction 0.0]
+                  [friction 0.5]
                   [elasticity 1.0])])))
 
 (define balls
