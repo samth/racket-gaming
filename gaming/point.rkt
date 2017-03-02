@@ -40,6 +40,9 @@
     (define/public (to-cpv)
       (get-cpv))
 
+    (define/public (copy oth)
+      (set-cpv (send oth to-cpv)))
+
     ))
 
 (define point%
@@ -57,6 +60,9 @@
     (define/public (scale factor)
       (set! x (* x factor))
       (set! y (* y factor)))
+    (define/public (copy oth)
+      (set! x (send oth get-x))
+      (set! y (send oth get-y)))
     (define/public (to-cpv)
       (cpv (exact->inexact x) (exact->inexact y)))
     ))
