@@ -98,7 +98,7 @@ You should see a blue circle falling and bouncing off the ground.
 ### Next steps
 
 Please consult the
-[full examples](https://github.com/samvv/racket-gaming/tree/master/examples) to get
+[full examples](https://github.com/samvv/racket-gaming/tree/master/gaming/examples) to get
 your feet wet and to get an idea how the programs are made. Next, read
 the documentation for extensive information on how to use the library. If you're stuck,
 just [open an issue at GitHub](https://github.com/samvv/racket-gaming/issues/new).
