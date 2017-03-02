@@ -1,6 +1,7 @@
 #lang racket
 
 (require ramunk
+         (only-in mrlib/image-core render-image)
          2htdp/image
          "syntax.rkt"
          "helpers.rkt"
@@ -34,10 +35,11 @@
       (send dc suspend-flush)
       (send dc clear)
       (for ([object objects])
-        (send dc draw-bitmap 
-              (image->bitmap (send object render))
-              (send object get-x) 
-              (send object get-y)))
+        (render-image
+          (send object render)
+          dc
+          (send object get-x) 
+          (send object get-y)))
       (send dc resume-flush))
 
     (define/public (get-cp-space)
