@@ -110,10 +110,7 @@ Library created and maintained by Sam Vervaeck.
 Thanks to Adriaan Leynse for the original concept and
 providing an exemplary implementation using racket/gui.
 
-This library is a fork of the library provided by the
-[Software Languages Lab](http://soft.vub.ac.be/soft/edu/teaching) as
-part of one of their courses. A full backport to this library
-has been provided in *canvas.rkt*. Use *graphics/canvas.rkt*  in
-order to use racket-gaming as a back-en instead of the old library.
- 
-The libraries that have been of use are stored in the folder *references*.
+This library started out as a fork of the library provided by the [Software
+Languages Lab](http://soft.vub.ac.be/soft/edu/teaching) as part of one of their
+courses. 
+
