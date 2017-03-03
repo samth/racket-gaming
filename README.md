@@ -48,6 +48,11 @@ Currently, only macOS sierra is supported. This is due to the fact that the
 does not contain any releases yet for other platforms. This will get fixed in
 the next couple of weeks, however.
 
+## Hacking Into The Code
+
+Read the [contribution guidelines](https://github.com/samvv/racket-gaming/tree/master/CONTRIBUTING.md)
+for more information about how the code is structured and how you can contribute.
+
 ## Usage
 
 The following demonstrates how to set up a world, a screen and some game objects.
