@@ -43,7 +43,7 @@ before doing so!
 
 ## Platform Limitations
 
-Currently, only macOS sierry is supported. This is due to the fact that the
+Currently, only macOS sierra is supported. This is due to the fact that the
 [phyics engine](https://github.com/samvv/ramunk)
 does not contain any releases yet for other platforms. This will get fixed in
 the next couple of weeks, however.
